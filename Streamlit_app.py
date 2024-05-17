@@ -202,12 +202,17 @@ def ask_gemini(question):
     response = model.generate_content(ask_question_on_autodesk_and_generate_prompt(question=question))
     return response
 
-st.title("Civil 3D helper tool")
+def main():
+    st.title("Civil 3D helper tool")
 
-user_input = st.text_input("Enter your text:")
-submit_button = st.button("Submit")
+    user_input = st.text_input("Enter your text:")
+    submit_button = st.button("Submit")
 
-if submit_button:
-    with st.spinner("Processing..."):
-        response = ask_gemini(question=user_input)
-    st.write(response.text)
+    if submit_button:
+        with st.spinner("Processing..."):
+            response = ask_gemini(question=user_input)
+        st.write(response)
+
+if __name__ == "__main__":
+    main()
+
