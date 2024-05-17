@@ -197,7 +197,7 @@ def ask_question_on_autodesk_and_generate_prompt(question):
     return prompt
 
 def ask_gemini(question):
-    genai.configure(api_key=st.secrets["Google_Gemini_API"])
+    genai.configure(api_key="AIzaSyBlym-KoGLx3x2kMZ_617mWK3i5X5AfTgs")
     model = genai.GenerativeModel('gemini-1.5-pro-latest')
     response = model.generate_content(ask_question_on_autodesk_and_generate_prompt(question=question))
     return response
