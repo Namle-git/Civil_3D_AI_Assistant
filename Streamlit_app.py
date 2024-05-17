@@ -8,6 +8,7 @@ from urllib.parse import quote
 from bs4 import BeautifulSoup, NavigableString
 import requests
 import google.generativeai as genai
+import os
 
 def extract_info(url):
     response = requests.get(url)
@@ -197,7 +198,7 @@ def ask_question_on_autodesk_and_generate_prompt(question):
     return prompt
 
 def ask_gemini(question):
-    genai.configure(api_key=Google_Gemini_API)
+    genai.configure(api_key=os.environ.get('Google_Gemini_API'))
     model = genai.GenerativeModel('gemini-1.5-pro-latest')
     response = model.generate_content(ask_question_on_autodesk_and_generate_prompt(question=question))
     return response
