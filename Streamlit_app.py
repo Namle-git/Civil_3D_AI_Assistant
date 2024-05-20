@@ -220,7 +220,7 @@ def main():
     if submit_button:
         with st.spinner("Processing..."):
             response = ask_gemini(question=user_input)
-        st.write(response)
+        st.write(response.text)
 
 if __name__ == "__main__":
     main()
