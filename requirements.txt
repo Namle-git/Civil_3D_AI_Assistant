@@ -3,4 +3,4 @@ selenium==4.19.0
 webdriver-manager==4.0.1
 beautifulsoup4==4.12.3
 requests==2.31.0
-google-generativeai==0.5.0
+openai=1.30.1
