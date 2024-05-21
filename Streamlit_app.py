@@ -97,9 +97,10 @@ def get_top_5_links(search_query):
         driver.get(simulated_search_url)
 
         # Wait for the content to load (adjust the wait time as necessary)
-        wait = WebDriverWait(driver, 10)
-        links = wait.until(EC.presence_of_all_elements_located((By.TAG_NAME, "a")))
-        
+        time.sleep(1)  # You might need to adjust this based on page load time
+
+        # Find the element containing the instructions (inspect the page to get the correct selector)
+        links = driver.find_elements(By.TAG_NAME, "a")  # Replace with the actual ID or other selector
         top_5_links = [link.get_attribute("href") for link in links[2:7]]
 
         driver.quit()  # Close the browser
@@ -110,8 +111,15 @@ def get_top_5_links(search_query):
 
 def extract_text_from_autodesk_help(url):
     try:
-        # Set up WebDriver (replace with your actual WebDriver path if needed)
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+        # Set up Chrome options for headless mode
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+
+        # Set up WebDriver
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         driver.get(url)
 
         # Wait for the content to load (adjust the wait time as necessary)
@@ -129,8 +137,15 @@ def extract_text_from_autodesk_help(url):
 
 def extract_content_from_autodesk_help(url):
     try:
+        # Set up Chrome options for headless mode
+        chrome_options = Options()
+        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+
         # Set up WebDriver
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         driver.get(url)
 
         time.sleep(1)  # Adjust wait time as needed
@@ -168,12 +183,13 @@ def extract_content_from_autodesk_help(url):
 
 def ask_question_on_autodesk_and_generate_prompt(question):
     prompt = ""
-    prompt += "Here's some information from 5 different sources. The sources are either the Autodesk Civil 3D documentation or threads from the Civil 3D support forum. Information from the documentation starts with text from article and include links to any images or video in the article. The information from the forum starts with the original question and includes the top 2 most liked responses and the accepted solutions. "
-    prompt += f"Use the information given to answer this question: {question}."
+    prompt += "Here's some information from 5 different sources. The sources are either the Autodesk Civil 3D documentation or threads from the Civil 3D support forum. Information from the documentation starts with text from article and include links to any images or video in the article. The information from the forum starts with the original question and includes the top 2 most liked responses and the accepted solutions. The most relevent text are at the start of the prompt."
+    prompt += f"Use the information given to answer this question: {question}"
     top_5_links = get_top_5_links(search_query=question)
     for link in top_5_links:
         try:
             original_question, top_comments, accepted_solutions = extract_info(link)
+            prompt += f"\n"
             prompt += f"Original question: {original_question} \n"
             prompt += f"Top 2 most liked comments: \n"
             for comment, kudos in top_comments:
@@ -184,6 +200,7 @@ def ask_question_on_autodesk_and_generate_prompt(question):
         except:
             text, images, videos = extract_content_from_autodesk_help(link)
             if text:
+                prompt += f"\n"
                 prompt += f"Text from article:\n"
                 for t in text:
                     prompt += t
