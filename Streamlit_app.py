@@ -8,10 +8,10 @@ from selenium.webdriver.chrome.options import Options
 from urllib.parse import quote
 from bs4 import BeautifulSoup, NavigableString
 import requests
-import google.generativeai as genai
+import openai
+from openai import OpenAI
 import os
 
-#Extract_info
 def extract_info(url):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, 'html.parser')
@@ -222,10 +222,17 @@ def ask_question_on_autodesk_and_generate_prompt(question):
     print(prompt)
     return prompt
 
-def ask_gemini(question):
-    genai.configure(api_key=os.environ.get('Google_Gemini_API'))
-    model = genai.GenerativeModel('gemini-1.5-pro-latest')
-    response = model.generate_content(ask_question_on_autodesk_and_generate_prompt(question=question))
+def ask_gpt_4o(question):
+    client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {
+                "role": "user",
+                "content": ask_question_on_autodesk_and_generate_prompt(question=question),
+            }
+        ],
+    )
     return response
 
 def main():
@@ -236,8 +243,8 @@ def main():
 
     if submit_button:
         with st.spinner("Processing..."):
-            response = ask_gemini(question=user_input)
-        st.write(response.text)
+            response = ask_gpt_4o(question=user_input)
+        st.write(response.choices[0].message.content)
 
 if __name__ == "__main__":
     main()
