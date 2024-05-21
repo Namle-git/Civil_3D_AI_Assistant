@@ -236,15 +236,16 @@ def ask_gpt_4o(question):
     return response
 
 def main():
-    st.title("Civil 3D helper tool")
+    with st.container():
+        st.title("Civil 3D helper tool")
 
-    user_input = st.text_input("Enter your text:")
-    submit_button = st.button("Submit")
+        user_input = st.text_input("Enter your text:")
+        submit_button = st.button("Submit")
 
-    if submit_button:
-        with st.spinner("Processing..."):
-            response = ask_gpt_4o(question=user_input)
-        st.write(response.choices[0].message.content)
+        if submit_button or user_input:
+            with st.spinner("Processing..."):
+                response = ask_gpt_4o(question=user_input)
+            st.write(response.choices[0].message.content)
 
 if __name__ == "__main__":
     main()
