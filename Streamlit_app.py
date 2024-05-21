@@ -97,7 +97,7 @@ def get_top_5_links(search_query):
         driver.get(simulated_search_url)
 
         # Wait for the content to load (adjust the wait time as necessary)
-        time.sleep(1)  # You might need to adjust this based on page load time
+        time.sleep(5)  # You might need to adjust this based on page load time
 
         # Find the element containing the instructions (inspect the page to get the correct selector)
         links = driver.find_elements(By.TAG_NAME, "a")  # Replace with the actual ID or other selector
