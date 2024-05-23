@@ -69,7 +69,7 @@ Civil_3D_AI_Assistant is a Streamlit app designed to assist users with questions
 
 ## Contributing
 ### Code of Conduct
-This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [your-email@example.com].
+This project adheres to the [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to [nemole1407@gmail.com].
 
 ### How to Contribute
 1. Fork the repository
