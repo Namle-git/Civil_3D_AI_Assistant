@@ -11,6 +11,7 @@ import requests
 from openai import OpenAI
 import os
 
+
 def extract_info(url):
     """
         Extracts the original question, top comments, and accepted solutions from a given Civil 3D forum page URL.
@@ -105,6 +106,7 @@ def extract_info(url):
     # Return the original question, top comments, and accepted solutions
     return original_question, top_comments, accepted_solutions
 
+
 def get_top_5_links(search_query):
     """
        Simulates a search for a query on the Autodesk Civil 3D 2024 Help page and retrieves the top 5 pages links.
@@ -150,6 +152,7 @@ def get_top_5_links(search_query):
         print(f"An error occurred: {e}")
         return None
 
+
 def extract_text_from_autodesk_help(url):
     """
         Extracts text content from a Civil 3D documentation page.
@@ -188,6 +191,7 @@ def extract_text_from_autodesk_help(url):
     except Exception as e:
         print(f"An error occurred: {e}")
         return None
+
 
 def extract_content_from_autodesk_help(url):
     """
@@ -244,12 +248,14 @@ def extract_content_from_autodesk_help(url):
             if video_url:
                 video_urls.append(video_url)
 
-        driver.quit() # Close the browser
+        driver.quit()  # Close the browser
+
         return extracted_text, image_urls, video_urls
 
     except Exception as e:
         print(f"An error occurred: {e}")
         return None, None, None  # Return None for all types on error
+
 
 def ask_question_on_autodesk_and_generate_prompt(question):
     """
@@ -310,6 +316,7 @@ def ask_question_on_autodesk_and_generate_prompt(question):
     print(prompt)
     return prompt
 
+
 def ask_gpt_4o(question):
     """
         Sends the prompt to the GPT-4 model and returns the response.
@@ -324,7 +331,8 @@ def ask_gpt_4o(question):
             Exception: If there is an issue with the API request.
         """
     # Initiate the OpenAI client
-    client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+
+    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     # Generate the prompt using the provided question and send the request to the GPT-4o model
     response = client.chat.completions.create(
@@ -337,7 +345,6 @@ def ask_gpt_4o(question):
         ],
     )
     return response
-
 
 
 def main():
@@ -356,6 +363,7 @@ def main():
                 response = ask_gpt_4o(question=user_input)
             # Display the generated response
             st.write(response.choices[0].message.content)
+
 
 if __name__ == "__main__":
     main()
