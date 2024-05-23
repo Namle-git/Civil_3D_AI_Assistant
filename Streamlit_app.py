@@ -249,6 +249,7 @@ def extract_content_from_autodesk_help(url):
                 video_urls.append(video_url)
 
         driver.quit()  # Close the browser
+
         return extracted_text, image_urls, video_urls
 
     except Exception as e:
@@ -330,6 +331,7 @@ def ask_gpt_4o(question):
             Exception: If there is an issue with the API request.
         """
     # Initiate the OpenAI client
+
     client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
     # Generate the prompt using the provided question and send the request to the GPT-4o model

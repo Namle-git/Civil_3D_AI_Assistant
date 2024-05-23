@@ -2,7 +2,7 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
 
-name: Build and deploy Python app to Azure Web App - Civil3DAIAssistant
+name: Build and deploy Python app to Azure Web App - testapp3212323
 
 on:
   push:
@@ -65,14 +65,14 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v1
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_902F31E2FE8A4982BC340CFA83B09847 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_5AA607A8B9404C3E8CEEAE2EE9485C48 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6A851870F9CE451AA822B68EF337A3B5 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_034ADBA08EC446C48C47A88C0F2DB1B7 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_FF4EA02B2E154261B705FCF019AAF323 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_337BAC1165C74D39A5BDC07C98E248E0 }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v2
         id: deploy-to-webapp
         with:
-          app-name: 'Civil3DAIAssistant'
+          app-name: 'testapp3212323'
           slot-name: 'Production'
           
