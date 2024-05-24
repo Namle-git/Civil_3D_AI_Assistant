@@ -11,6 +11,7 @@ Civil_3D_AI_Assistant is a Streamlit app designed to assist users with questions
 - [License](#license)
 - [Acknowledgements](#acknowledgements)
 - [Contact Information](#contact-information)
+- [Badges](#badges)
 
 ## Installation
 ### Prerequisites
@@ -116,3 +117,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Contact Information
 - Maintainer: [Nam Le](mailto:nemole1407@gmail.com)
 
+## Badges
+
+- ![Build Status](https://github.com/Namle-git/Civil_3D_AI_Assistant/actions/workflows/main.yml/badge.svg)
+- ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
