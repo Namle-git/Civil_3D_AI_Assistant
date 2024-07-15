@@ -278,7 +278,20 @@ def ask_question_on_autodesk_and_generate_prompt(question):
 
     # Get the top 5 links and iterate through them to extract their information then structurally
     # adding the information into the prompt
-    top_5_links = get_top_5_links(search_query=question)
+    retry = True
+    attempts = 0
+    max_attempts = 2
+    while retry and attempts < max_attempts:
+        try:
+            top_5_links = get_top_5_links(search_query=question)
+            retry = False  # If the function succeeds, stop retrying
+        except Exception as e:
+            attempts += 1
+            print(f"Top 5 links attempt {attempts} failed: {e}")
+            if attempts >= max_attempts:
+                print("Max attempts reached. Exiting.")
+            else:
+                print("Retrying...")
     for link in top_5_links:
         # Try to extract the page as if it's a forum page
         try:
