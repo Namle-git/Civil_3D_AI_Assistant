@@ -287,6 +287,7 @@ def ask_question_on_autodesk_and_generate_prompt(question):
             retry = False  # If the function succeeds, stop retrying
         except Exception as e:
             attempts += 1
+            time.sleep(1)
             print(f"Top 5 links attempt {attempts} failed: {e}")
             if attempts >= max_attempts:
                 print("Max attempts reached. Exiting.")
