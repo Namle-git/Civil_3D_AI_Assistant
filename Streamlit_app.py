@@ -142,6 +142,7 @@ def get_top_5_links(search_query):
 
         folder = os.path.dirname(chrome_install)
         chromedriver_path = os.path.join(folder, "chromedriver.exe")
+        logging.info(str(chromedriver_path))
         
         service = Service(chromedriver_path)
         driver = webdriver.Chrome(service=service, options=chrome_options)
