@@ -10,6 +10,9 @@ from bs4 import BeautifulSoup, NavigableString
 import requests
 from openai import OpenAI
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO)
 
 
 def extract_info(url):
@@ -155,7 +158,7 @@ def get_top_5_links(search_query):
         return top_5_links
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.info(f"An error occurred: {e}")
         return None
 
 
@@ -195,7 +198,7 @@ def extract_text_from_autodesk_help(url):
         return extracted_text
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.info(f"An error occurred: {e}")
         return None
 
 
@@ -259,7 +262,7 @@ def extract_content_from_autodesk_help(url):
         return extracted_text, image_urls, video_urls
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logging.info(f"An error occurred: {e}")
         return None, None, None  # Return None for all types on error
 
 
@@ -294,11 +297,11 @@ def ask_question_on_autodesk_and_generate_prompt(question):
         except Exception as e:
             attempts += 1
             time.sleep(1)
-            print(f"Top 5 links attempt {attempts} failed: {e}")
+            logging.info(f"Top 5 links attempt {attempts} failed: {e}")
             if attempts >= max_attempts:
-                print("Max attempts reached. Exiting.")
+                logging.info("Max attempts reached. Exiting.")
             else:
-                print("Retrying...")
+                logging.info("Retrying...")
     for link in top_5_links:
         # Try to extract the page as if it's a forum page
         try:
@@ -333,7 +336,7 @@ def ask_question_on_autodesk_and_generate_prompt(question):
     prompt = prompt.replace("\t", "")
     prompt = prompt.replace("Solved!\n\nGo to Solution.", "")
     prompt = prompt.replace("\n\n\n\n", "")
-    print(prompt)
+    logging.info(prompt)
     return prompt
 
 
