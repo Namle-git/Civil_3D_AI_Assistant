@@ -185,8 +185,8 @@ def extract_text_from_autodesk_help(url):
         time.sleep(1)
 
         # Find the element containing the instructions (inspect the page to get the correct selector)
-        content_element = driver.find_element(By.CLASS_NAME, "caas_body")
-        extracted_text = content_element.text
+        content = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "caas_body"))
+        extracted_text = content.text
 
         driver.quit()  # Close the browser
         return extracted_text
@@ -227,15 +227,12 @@ def extract_content_from_autodesk_help(url):
         # Wait for the content to load
         time.sleep(1)
 
-        # Initialize empty lists for different content types
-        extracted_text = []
         image_urls = []
         video_urls = []
 
         # Extract Text
-        content_elements = driver.find_elements(By.CLASS_NAME, "caas_body")  # Adjust selector if needed
-        for element in content_elements:
-            extracted_text.append(element.text)
+        content = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "caas_body"))
+        extracted_text = content.text
 
         # Extract Image URLs (Adjust selectors as needed)
         image_elements = driver.find_elements(By.TAG_NAME, "img")
@@ -313,9 +310,7 @@ def ask_question_on_autodesk_and_generate_prompt(question):
             text, images, videos = extract_content_from_autodesk_help(link)
             if text:
                 prompt += f"\n**Text from article**:\n"
-                for t in text:
-                    prompt += t
-                    prompt += " "
+                prompt += text
             if images:
                 prompt += f"\n**Link to images in article**:\n"
                 for img in images:
