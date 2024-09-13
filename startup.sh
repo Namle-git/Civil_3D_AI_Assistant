@@ -1,3 +1,9 @@
+# Update the package list
+apt-get update
+
+# Install necessary dependencies for Chrome and ChromeDriver
+apt-get install -y wget unzip curl libglib2.0-0 libnss3 libgconf-2-4 libxi6 libxcursor1 libxss1 libxcomposite1 libasound2 libxtst6 fonts-liberation libappindicator3-1 xdg-utils
+
 # Install Chrome
 wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 apt-get -y install ./google-chrome-stable_current_amd64.deb
