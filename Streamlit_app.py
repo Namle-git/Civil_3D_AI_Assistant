@@ -141,7 +141,7 @@ def get_top_5_links(search_query):
         chrome_options.add_argument("--disable-dev-shm-usage")
 
         # Set up WebDriver
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options))
         driver.get(simulated_search_url)
 
         # Wait for the content to load
@@ -188,7 +188,9 @@ def extract_text_from_autodesk_help(url):
         time.sleep(1)
 
         # Find the element containing the instructions (inspect the page to get the correct selector)
-        content = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "caas_body"))
+        content = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "caas_body"))
+        )
         extracted_text = content.text
 
         driver.quit()  # Close the browser
@@ -234,7 +236,9 @@ def extract_content_from_autodesk_help(url):
         video_urls = []
 
         # Extract Text
-        content = WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.CLASS_NAME, "caas_body"))
+        content = WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, "caas_body"))
+        )
         extracted_text = content.text
 
         # Extract Image URLs (Adjust selectors as needed)
