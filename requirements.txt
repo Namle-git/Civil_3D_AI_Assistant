@@ -1,6 +1,6 @@
 streamlit==1.32.0
 selenium==4.19.0
-webdriver-manager==4.0.1
+webdriver-manager==4.0.2
 beautifulsoup4==4.12.3
 requests==2.31.0
 openai==1.30.1
