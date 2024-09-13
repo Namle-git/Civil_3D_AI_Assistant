@@ -141,7 +141,7 @@ def get_top_5_links(search_query):
         chrome_options.add_argument("--disable-dev-shm-usage")
 
         # Set up WebDriver
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options))
+        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
         driver.get(simulated_search_url)
 
         # Wait for the content to load
