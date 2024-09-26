@@ -11,15 +11,17 @@ from urllib.parse import quote
 from bs4 import BeautifulSoup, NavigableString
 import requests
 from openai import OpenAI
+from azure.keyvault.secrets import SecretClient
+from azure.identity import DefaultAzureCredential
 import os
 import logging
 
 logging.basicConfig(level=logging.INFO)
 
 
-def extract_info(url):
+def extract_forum_info(url):
     """
-        Extracts the original question, top comments, and accepted solutions from a given Civil 3D forum page URL.
+        Extracts the original question, and accepted solutions from a given Civil 3D forum page URL.
 
         Args:
             url (str): The URL of the forum page to extract information from.
@@ -27,7 +29,6 @@ def extract_info(url):
         Returns:
             tuple: A tuple containing:
                 - original_question (str): The combined header and body of the original question.
-                - top_comments (list of tuples): A list of the top two comments with their kudos counts.
                 - accepted_solutions (list of str): A list of accepted solutions with their links (if any).
 
         Raises:
@@ -40,79 +41,87 @@ def extract_info(url):
     except requests.RequestException as e:
         raise requests.RequestException(f"Failed to retrieve the page: {e}")
 
-    # Parse the content of the response with BeautifulSoup
-    soup = BeautifulSoup(response.content, 'html.parser')
+    try:
+        # Parse the content of the response with BeautifulSoup
+        soup = BeautifulSoup(response.content, 'html.parser')
+        
+        header = soup.find('h2', class_='PageTitle lia-component-common-widget-page-title').text.strip()
 
-    # Extract the header (subject) of the original question
-    header = soup.find('div', class_='lia-message-subject').text.strip()
+        # Extract the body content of the original question
+        question = soup.find('div', itemprop='text').text.strip()
 
-    # Extract the body content of the original question
-    question = soup.find('div', class_='lia-message-body-content').text.strip()
+        # Combine the header and the body to form the full original question
+        original_question = header + " " + question
 
-    # Combine the header and the body to form the full original question
-    original_question = header + " " + question
+        # Find all comments on page
+        comments = soup.find_all('div', class_='lia-message-head')
 
-    # Find all comments on page
-    comments = soup.find_all('div', class_='lia-message-body-content')
+        # Extract the kudos counts for each comment
+        kudos_counts = [int(count.text) for count in
+                        soup.find_all('span', class_='MessageKudosCount lia-component-kudos-widget-message-kudos-count')]
 
-    # Extract the kudos counts for each comment
-    kudos_counts = [int(count.text) for count in
-                    soup.find_all('span', class_='MessageKudosCount lia-component-kudos-widget-message-kudos-count')]
+        # Combine comments and kudos counts into a list of tuples
+        comment_kudos = list(zip(comments, kudos_counts))[1:]
+        
+        # Extract accepted solutions
+        accepted_solutions = []
+        for comment in soup.find_all('div', class_='lia-message-body-content')[1:]:
+            checkmark_div = comment.find('div', class_='lia-message-body-accepted-solution-checkmark')
+            if checkmark_div:
+                # Get the parent element containing the checkmark and solution text
+                solution_container = checkmark_div.parent
 
-    # Combine comments and kudos counts into a list of tuples
-    comment_kudos = list(zip(comments, kudos_counts))[1:]
+                # Find the iframe element and extract the link
+                iframe = solution_container.find('iframe')
+                link = iframe.get('src') if iframe else None  # Get link if iframe exists
 
-    # Sort by kudos count in descending order and extract the 2 most liked comments
-    top_comments = sorted(comment_kudos, key=lambda x: x[1], reverse=True)[:2]
+                # Extract child elements (including text nodes and tags)
+                children = list(solution_container.children)
 
-    # Extract accepted solutions
-    accepted_solutions = []
-    for comment in soup.find_all('div', class_='lia-message-body-content')[1:]:
-        checkmark_div = comment.find('div', class_='lia-message-body-accepted-solution-checkmark')
-        if checkmark_div:
-            # Get the parent element containing the checkmark and solution text
-            solution_container = checkmark_div.parent
+                # Extract text content from child elements
+                text_parts = []
+                for child in children:
+                    if isinstance(child, NavigableString):
+                        text_parts.append(child.strip())
+                    elif child.name not in ['iframe', 'br']:
+                        text_parts.append(child.text.strip())
 
-            # Find the iframe element and extract the link
-            iframe = solution_container.find('iframe')
-            link = iframe.get('src') if iframe else None  # Get link if iframe exists
+                # Insert the link at the position where the iframe was (if it exists)
+                if link:
+                    # Find the index where the iframe WOULD HAVE BEEN before it was removed
+                    iframe_index = -1
+                    for i, child in enumerate(children):
+                        if child == iframe:
+                            iframe_index = i
+                            break
 
-            # Extract child elements (including text nodes and tags)
-            children = list(solution_container.children)
+                    if iframe_index != -1:
+                        text_parts.insert(iframe_index + 1, f"\n\nLink: {link}\n\n")
+                    else:
+                        text_parts.append(f"\n\nLink: {link}\n\n")
 
-            # Extract text content from child elements
-            text_parts = []
-            for child in children:
-                if isinstance(child, NavigableString):
-                    text_parts.append(child.strip())
-                elif child.name not in ['iframe', 'br']:
-                    text_parts.append(child.text.strip())
+                # Join the text parts to form the final solution text
+                solution_text = ''.join(text_parts)
 
-            # Insert the link at the position where the iframe was (if it exists)
-            if link:
-                # Find the index where the iframe WOULD HAVE BEEN before it was removed
-                iframe_index = -1
-                for i, child in enumerate(children):
-                    if child == iframe:
-                        iframe_index = i
-                        break
+                # Append the solution text to the list of accepted solutions
+                accepted_solutions.append(solution_text.strip().replace("\xa0",""))
 
-                if iframe_index != -1:
-                    text_parts.insert(iframe_index + 1, f"\n\nLink: {link}\n\n")
-                else:
-                    text_parts.append(f"\n\nLink: {link}\n\n")
+        if not original_question:
+            original_question = "Failed to retrieve the original question."
 
-            # Join the text parts to form the final solution text
-            solution_text = '\n'.join(text_parts)
-
-            # Append the solution text to the list of accepted solutions
-            accepted_solutions.append(solution_text)
-
-    # Return the original question, top comments, and accepted solutions
-    return original_question, top_comments, accepted_solutions
+        # Check if the accepted solutions list is empty and provide a fallback message if necessary
+        if not accepted_solutions:
+            accepted_solutions = ["No accepted solutions found."]
+        # Return the original question, top comments, and accepted solutions
+        return original_question, accepted_solutions
+    except Exception as e:
+        logging.info(f"An error occurred: {e}")
+        original_question = "Failed to retrieve the original question."
+        accepted_solutions = ["No accepted solutions found."]
+        return original_question, accepted_solutions
 
 
-def get_top_5_links(search_query):
+def get_top_5_links(search_query, year=2024):
     """
        Simulates a search for a query on the Autodesk Civil 3D 2024 Help page and retrieves the top 5 pages links.
 
@@ -129,7 +138,7 @@ def get_top_5_links(search_query):
     encoded_query = quote(search_query, safe='')
 
     # Construct the search URL with the specific format (fixed path)
-    simulated_search_url = f"https://help.autodesk.com/view/CIV3D/2024/ENU/?query={encoded_query}"
+    simulated_search_url = f"https://help.autodesk.com/view/CIV3D/{year}/ENU/?query={encoded_query}"
 
     try:
         # Set up Chrome options for headless mode
@@ -147,15 +156,16 @@ def get_top_5_links(search_query):
         time.sleep(1)
 
         # Find the element containing the instructions (inspect the page to get the correct selector)
-        links = driver.find_elements(By.TAG_NAME, "a")  # Replace with the actual ID or other selector
-        top_5_links = [link.get_attribute("href") for link in links[2:7]]
+        links = driver.find_elements(By.CSS_SELECTOR, '.results-item all link')
+        top_5_links = [link.get_attribute("href") for link in links[:5]]
 
         driver.quit()  # Close the browser
         return top_5_links
 
     except Exception as e:
+        top_5_links = ["Failed to retrieve the top 5 links."]
         logging.info(f"An error occurred: {e}")
-        return None
+        return top_5_links
 
 
 def extract_text_from_autodesk_help(url):
@@ -229,41 +239,49 @@ def extract_content_from_autodesk_help(url):
         driver.get(url)
 
         # Wait for the content to load
-        time.sleep(1)
-
-        image_urls = []
-        video_urls = []
-
-        # Extract Text
-        content = WebDriverWait(driver, 10).until(
+        WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.CLASS_NAME, "caas_body"))
         )
+
+        # Extract page source after it is fully loaded
+        page_source = driver.page_source
+        driver.quit()  # Close the browser
+
+        # Parse page source with BeautifulSoup
+        soup = BeautifulSoup(page_source, 'html.parser')
+
+        # Extract Text
+        content = soup.find('div', class_='caas_bidues')
         extracted_text = content.text
 
-        # Extract Image URLs (Adjust selectors as needed)
-        image_elements = driver.find_elements(By.TAG_NAME, "img")
-        for img in image_elements[1:]:
-            image_url = img.get_attribute("src")
+        # Extract Image URLs
+        image_urls = []
+        image_elements = content.find_all('imgage')
+        for img in image_elements:
+            image_url = img['src']
             if image_url:
                 image_urls.append(image_url)
 
-        # Extract Video URLs (Adjust selectors and logic as needed)
-        video_elements = driver.find_elements(By.TAG_NAME, "video")  # Or by other element types
+        # Extract Video URLs
+        video_urls = []
+        video_elements = content.find_all('videoelement')
         for video in video_elements:
-            video_url = video.get_attribute("src")  # Or extract from child elements like 'source'
-            if video_url:
-                video_urls.append(video_url)
-
-        driver.quit()  # Close the browser
+            sources = video.find_all('source')
+            for source in sources:
+                video_url = source['src']
+                if video_url:
+                    video_urls.append(video_url)
 
         return extracted_text, image_urls, video_urls
 
     except Exception as e:
+        extracted_text = "Failed to extract text from the page."
+        image_urls = ["Failed to extract image URLs from the page."]
+        video_urls = ["Failed to extract video URLs from the page."]
         logging.info(f"An error occurred: {e}")
-        return None, None, None  # Return None for all types on error
+        return extracted_text, image_urls, video_urls
 
-
-def ask_question_on_autodesk_and_generate_prompt(question):
+def ask_question_on_autodesk_and_generate_prompt(question, year=2024):
     """
        Generates a prompt using information from Autodesk Civil 3D documentation and forum based on a given question.
 
@@ -289,7 +307,7 @@ def ask_question_on_autodesk_and_generate_prompt(question):
     max_attempts = 2
     while retry and attempts < max_attempts:
         try:
-            top_5_links = get_top_5_links(search_query=question)
+            top_5_links = get_top_5_links(search_query=question, year=year)
             retry = False  # If the function succeeds, stop retrying
         except Exception as e:
             attempts += 1
@@ -302,12 +320,12 @@ def ask_question_on_autodesk_and_generate_prompt(question):
     for link in top_5_links:
         # Try to extract the page as if it's a forum page
         try:
-            original_question, top_comments, accepted_solutions = extract_info(link)
+            original_question, top_comments, accepted_solutions = extract_forum_info(link)
             prompt += f"\n"
             prompt += f"**Original question**: {original_question} \n"
             prompt += f"**Top most liked comments**: \n"
-            for comment, kudos in top_comments:
-                prompt += comment.text.strip()
+            for comment in top_comments:
+                prompt += comment.strip()
             prompt += f"\n**Accepted solution(s)** \n"
             for solution in accepted_solutions:
                 prompt += solution.strip()
@@ -335,7 +353,77 @@ def ask_question_on_autodesk_and_generate_prompt(question):
     return prompt
 
 
-def ask_gpt_4o(question):
+def ask_question_on_autodesk_and_generate_prompt(question, year=2024):
+    """
+       Generates a prompt using information from Autodesk Civil 3D documentation and forum based on a given question.
+
+       Args:
+           question (str): The question to search for.
+
+       Returns:
+           str: The generated prompt with information from documentation and forum.
+       """
+    # Start the prompt with a fixed text
+    prompt = ("Here's some information from 5 different sources. The sources are either the Autodesk Civil 3D "
+              "documentation or threads from the Civil 3D support forum. Information from the documentation starts "
+              "with text from article and include links to any images or video in the article. The information from "
+              "the forum contain with the original question any accepted solutions")
+    # Add the user question to the prompt
+    prompt += f"Use the information given to answer this question: {question}"
+
+    # Get the top 5 links and iterate through them to extract their information then structurally
+    # adding the information into the prompt
+    retry = True
+    attempts = 0
+    max_attempts = 2
+    while retry and attempts < max_attempts:
+        try:
+            top_5_links = get_top_5_links(search_query=question, year=year)
+            retry = False  # If the function succeeds, stop retrying
+        except Exception as e:
+            attempts += 1
+            time.sleep(1)
+            logging.info(f"Top 5 links attempt {attempts} failed: {e}")
+            if attempts >= max_attempts:
+                logging.info("Max attempts reached. Exiting.")
+            else:
+                logging.info("Retrying...")
+    for link in top_5_links:
+        # Try to extract the page as if it's a forum page
+        try:
+            original_question, top_comments, accepted_solutions = extract_forum_info(link)
+            prompt += f"\n"
+            prompt += f"**Original question**: {original_question} \n"
+            prompt += f"**Top most liked comments**: \n"
+            for comment in top_comments:
+                prompt += comment.strip()
+            prompt += f"\n**Accepted solution(s)** \n"
+            for solution in accepted_solutions:
+                prompt += solution.strip()
+        # If the page does not contain forum information, extract it as a documentation page
+        except:
+            text, images, videos = extract_content_from_autodesk_help(link)
+            if text:
+                prompt += f"\n**Text from article**:\n"
+                prompt += text
+            if images:
+                prompt += f"\n**Link to images in article**:\n"
+                for img in images:
+                    prompt += img
+                    prompt += " "
+            if videos:
+                prompt += f"\n**Link to videos in article**:\n"
+                for vid in videos:
+                    prompt += vid
+                    prompt += " "
+    prompt = prompt.replace("\xa0", " ")
+    prompt = prompt.replace("\t", "")
+    prompt = prompt.replace("Solved!\n\nGo to Solution.", "")
+    prompt = prompt.replace("\n\n\n\n", "")
+    logging.info(prompt)
+    return prompt
+
+def ask_gpt_4o(question, year="2024"):
     """
         Sends the prompt to the GPT-4 model and returns the response.
 
@@ -349,8 +437,13 @@ def ask_gpt_4o(question):
             Exception: If there is an issue with the API request.
         """
     # Initiate the OpenAI client
-
-    client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+    key_vault_name = os.environ["KEYVAULT_NAME"]
+    keyVaultRui = f"https://{key_vault_name}.vault.azure.net/"
+    credential = DefaultAzureCredential()
+    client = SecretClient(vault_url=keyVaultRui, credential=credential)
+    secret = client.get_secret("openai-key")
+    openai_key = secret.value
+    client = OpenAI(api_key=openai_key)
 
     # Generate the prompt using the provided question and send the request to the GPT-4o model
     response = client.chat.completions.create(
@@ -358,7 +451,7 @@ def ask_gpt_4o(question):
         messages=[
             {
                 "role": "user",
-                "content": ask_question_on_autodesk_and_generate_prompt(question=question),
+                "content": ask_question_on_autodesk_and_generate_prompt(question=question, year=year),
             }
         ],
     )
@@ -370,18 +463,21 @@ def main():
     with st.container():
         # Display the asistant's name
         st.title("Civil 3D AI Assistant")
+        year_version = st.selectbox(
+        "Your Civil 3D version",
+        ("2024", "2023", "2022", "2021", "2020", "2019", "2018"),
+        )
 
         # Get the question from the user
-        user_input = st.text_input("Please don't enter any sensitive data:")
+        user_input = st.text_input("Enter your text:")
         submit_button = st.button("Submit")
 
         # Generate the prompt and inject it into GPT 4o
         if submit_button or user_input:
             with st.spinner("Processing..."):
-                response = ask_gpt_4o(question=user_input)
+                response = ask_gpt_4o(question=user_input, year=int(year_version))
             # Display the generated response
             st.write(response.choices[0].message.content)
-
 
 if __name__ == "__main__":
     main()
