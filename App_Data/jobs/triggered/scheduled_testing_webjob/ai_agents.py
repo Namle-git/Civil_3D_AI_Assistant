@@ -13,6 +13,7 @@ import requests
 from openai import OpenAI
 import os
 import logging
+import subprocess
 import ast
 import shutil
 import sys
@@ -36,7 +37,29 @@ sys.path.insert(0, main_project_dir)
 
 from Streamlit_app import get_top_5_links, extract_content_from_autodesk_help, extract_forum_info
 
+function_replaced = False
+
+def commit_changes_to_git(commit_message):
+    # Navigate to the main project directory
+    os.chdir(main_project_dir)
+
+    # Add changes
+    subprocess.run(['git', 'add', 'Streamlit_app.py'])
+
+    # Commit changes
+    subprocess.run(['git', 'commit', '-m', commit_message])
+
+    # Push changes
+    subprocess.run(['git', 'push', 'origin', 'main'])
+
+def restart_website():
+    # Touch the web.config file to trigger a restart
+    web_config_path = os.path.join(main_project_dir, 'web.config')
+    with open(web_config_path, 'a'):
+        os.utime(web_config_path, None)
+
 def test_top_5_links_retrieval():
+    global function_replaced
     reference_top_5_links = [
         'https://forums.autodesk.com/t5/Civil-3D-Forum/Cogo-Point-Text-Rotating-in-Viewport/td-p/9996980', 
         'https://help.autodesk.com/view/CIV3D/2024/ENU/?caas=caas/sfdcarticles/sfdcarticles/North-Arrow-Rotates-when-Linked-to-a-Viewport-in-Civil-3D.html', 
@@ -91,14 +114,19 @@ def test_top_5_links_retrieval():
                 logging.info(f"Replacement function output: {replacement_function_output}")
                 replacement_function_test_status = start_ai_agent(os.environ["TOP_5_LINKS_VERIFICATION_ASSISTANT"], message1=str(page_html_content), message2=str(replacement_function_output))
                 if replacement_function_test_status == "passed_test":
-                    replace_function_in_file(f"{main_project_dir}\Streamlit_app.py", "get_top_5_links", agent_output)
-                    alert_developer("Replacement code passed. Implementing", 1)
+                    try:
+                        replace_function_in_file(f"{main_project_dir}\Streamlit_app.py", "get_top_5_links", agent_output)
+                        function_replaced = True
+                        alert_developer("Replacement code passed. Implementing", 1)
+                    except Exception as e:
+                        alert_developer("Replacement code failed. Manual intervention required", 4)
                 else:
                     alert_developer("Replacement code failed. Manual intervention required", 4)
         else:
             alert_developer("Critical Error", 4)
 
 def test_extract_content_from_autodesk_help():
+    global function_replaced
     reference_text = '\n\nIssue:When a viewport is rotated in\xa0AutoCAD, AutoCAD Map 3D or Civil 3D, the underlying SID or ECW image is no longer aligned to the drafted content.\xa0 Non-rotated viewports appear normal.Note.\xa0 In some cases the content only shifts when zooming in or out.\xa0\n \n\nSolution:To minimize the impact of the issue: \n  \nIn AutoCAD Map 3D or Civil 3D, use MAPCONNECT\xa0command to connect to the SID or ECW as an FDO-connection.\n\n\n\n\n\nTry using a different image format, such as TIF.\nUse non-rotated viewports.\n\n\n\nProducts: AutoCAD Products;\n \n'
     reference_images = ['https://help.autodesk.com/sfdcarticles/img/0EM3A0000002uCr',
                         'https://help.autodesk.com/sfdcarticles/img/0EM3A0000002uFl']
@@ -154,14 +182,19 @@ def test_extract_content_from_autodesk_help():
                     replacement_function_text_output, replacement_function_image_urls, replacement_function_video_urls = replacement_function_output
                     replacement_function_test_status = start_ai_agent(os.environ["EXTRACTED_OUTPUT_COMPARISON_ASSISTANT"], message1=str(reference_text), message2=str(replacement_function_text_output))
                     if replacement_function_test_status == "passed_test":
-                        replace_function_in_file(f"{main_project_dir}\Streamlit_app.py", "extract_content_from_autodesk_help", agent_output)
-                        alert_developer("Replacement code passed. Implementing", 1)
+                        try:
+                            replace_function_in_file(f"{main_project_dir}\Streamlit_app.py", "extract_content_from_autodesk_help", agent_output)
+                            function_replaced = True
+                            alert_developer("Replacement code passed. Implementing", 1)
+                        except Exception as e:
+                            alert_developer("Replacement code failed. Manual intervention required", 4)
                 else:
                     alert_developer("Replacement code failed. Manual intervention required", 4)
         else:
             alert_developer("Critical Error", 4)
 
 def test_extract_forum_info():
+    global function_replaced
     reference_original_question = 'Curve Table Hii everyone,Is it possible to create curve table like (in img I have attached).If it is possible could anyone please explain the procedure.Thank you\xa0\n\n\n\n\t\t\t\t\t\n\t\t\t\t\t\tSolved!\n\t\t\t\t\t\n\t\t\t\t\tGo to Solution.'
     reference_accepted_solutions = ["I don't know your level of knowledge regarding label design, however you can put just about anything in one label or multiple things from different entities.Here is a video to get your feet wet. This is on annotation labels.https://www.youtube.com/watch?v=2qZ3nC-gL1MI am not sure if there is a way to do it with alignment labels. You can label the alignment with an annotation (think singular) or a alignment label (the entire alignment).https://www.youtube.com/watch?v=AYtIZzloeucHere is a video about alignment labels:Good luck labeling!!",
     'I tried editing the label properties and found "vertical speed and station". I wouldn\'t have expected to have seen anything regarding super elevation although you could try some of those other labels within the Cant information. I vaguely remember doing super elevation on one of my projects awhile back, and I don\'t know if that would fall under something that could be referenced with the alignment or not. You might be able to make an expression in the settings tab>alignments>commands>new command, but I don\'t know what.']
@@ -222,10 +255,12 @@ def test_extract_forum_info():
                     message2 = f"Original question: {str(replacement_original_question)}\nAccepted solutions: {str(replacement_accepted_solutions)}"
                     replacement_function_test_status = start_ai_agent(os.environ["EXTRACTED_FORUM_COMPARISON_ASSISTANT"], message1=str(message1), message2=str(message2))
                     if replacement_function_test_status == "passed_test":
-                        replace_function_in_file(f"{main_project_dir}\Streamlit_app.py", "extract_forum_info", agent_output)
-                        alert_developer("Replacement code passed. Implementing", 1)
-                    else:
-                        alert_developer("Replacement code failed. Manual intervention required", 4)
+                        try:
+                            replace_function_in_file(f"{main_project_dir}\Streamlit_app.py", "extract_forum_info", agent_output)
+                            function_replaced = True
+                            alert_developer("Replacement code passed. Implementing", 1)
+                        except Exception as e:
+                            alert_developer("Replacement code failed. Manual intervention required", 4)
                 else:
                     alert_developer("Execute_replacement_function returned None.", 4)
         else:
@@ -238,3 +273,7 @@ if __name__=="__main__":
     test_top_5_links_retrieval()
     logging.info("Testing content extraction from Autodesk help \n ------------------------------")
     test_extract_content_from_autodesk_help()
+    if function_replaced:
+        commit_changes_to_git("AI Agent: Replaced function")
+        restart_website()
+        logging.info("Application restart triggered.")
