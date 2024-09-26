@@ -82,10 +82,6 @@ class TestStreamlitApp(unittest.TestCase):
         # Call the function
         extracted_text, image_urls, video_urls = Streamlit_app.extract_content_from_autodesk_help(url)
 
-        # Print output for inspection
-        print("Extracted Text:", extracted_text)
-        print("Image URLs:", image_urls)
-        print("Video URLs:", video_urls)
 
         # Assertions to validate the result
         self.assertIn("Sample text 1", extracted_text)
