@@ -5,6 +5,7 @@ import Streamlit_app
 with open("test_forum_page.txt", 'r', encoding='utf-8') as file:
     test_forum_page = file.read()
 
+
 class TestStreamlitApp(unittest.TestCase):
 
     @patch('Streamlit_app.requests.get')
@@ -61,31 +62,31 @@ class TestStreamlitApp(unittest.TestCase):
     @patch('Streamlit_app.Service')
     def test_extract_content_from_autodesk_help(self, mock_service, mock_options, mock_chromedriver_manager,
                                                 mock_chrome):
-        # Mock the driver
+        # Mocking the Chrome WebDriver and options
         mock_driver = MagicMock()
         mock_chrome.return_value = mock_driver
+        mock_options_instance = MagicMock()
+        mock_options.return_value = mock_options_instance
+        mock_service_instance = MagicMock()
+        mock_service.return_value = mock_service_instance
+        mock_chromedriver_manager.install.return_value = 'mocked_driver_path'
 
-        # Mock the content of the page
-        mock_text_element = MagicMock()
-        mock_text_element.text = "Sample text 1\nSample text 2"
-        
-        # Set the return value for find_element (to mock text extraction)
-        mock_driver.find_element.return_value = mock_text_element
+        # Sample data to be returned by the mocked WebDriver
+        mock_text_elements = [MagicMock(), MagicMock()]
+        mock_text_elements[0].text = "Sample text 1"
+        mock_text_elements[1].text = "Sample text 2"
 
-        # Mock image elements
         mock_image_elements = [MagicMock(), MagicMock(), MagicMock()]
         mock_image_elements[1].get_attribute.return_value = "http://example.com/image1.jpg"
         mock_image_elements[2].get_attribute.return_value = "http://example.com/image2.jpg"
 
-        # Mock video elements
         mock_video_elements = [MagicMock()]
         mock_video_elements[0].get_attribute.return_value = "http://example.com/video1.mp4"
 
-        # Set the return values for find_elements
-        mock_driver.find_element.return_value = mock_text_element  # For text extraction
         mock_driver.find_elements.side_effect = [
+            mock_text_elements,  # First call returns text elements
             mock_image_elements,  # Second call returns image elements
-            mock_video_elements   # Third call returns video elements
+            mock_video_elements  # Third call returns video elements
         ]
 
         # Mock the URL
@@ -94,20 +95,15 @@ class TestStreamlitApp(unittest.TestCase):
         # Call the function
         extracted_text, image_urls, video_urls = Streamlit_app.extract_content_from_autodesk_help(url)
 
-        # Print output for inspection
-        print("Extracted Text:", extracted_text)
-        print("Image URLs:", image_urls)
-        print("Video URLs:", video_urls)
-
-        # Assertions to validate the result
-        self.assertIn("Sample text 1", extracted_text)
-        self.assertIn("Sample text 2", extracted_text)
+        # Assertions
+        self.assertEqual(extracted_text, ["Sample text 1", "Sample text 2"])
         self.assertEqual(image_urls, ["http://example.com/image1.jpg", "http://example.com/image2.jpg"])
         self.assertEqual(video_urls, ["http://example.com/video1.mp4"])
 
         # Ensure WebDriver was called correctly
+        mock_chrome.assert_called_once_with(service=mock_service_instance, options=mock_options_instance)
+        mock_driver.get.assert_called_once_with(url)
         mock_driver.quit.assert_called_once()
-
 
     @patch('Streamlit_app.ask_gpt_4o')
     def test_main(self, mock_ask_gpt_4o):
