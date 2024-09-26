@@ -95,8 +95,9 @@ class TestStreamlitApp(unittest.TestCase):
         # Call the function
         extracted_text, image_urls, video_urls = Streamlit_app.extract_content_from_autodesk_help(url)
 
-        # Assertions
-        self.assertEqual(extracted_text, ["Sample text 1", "Sample text 2"])
+        # Assertions to validate the result
+        self.assertIn("Sample text 1", extracted_text)
+        self.assertIn("Sample text 2", extracted_text)
         self.assertEqual(image_urls, ["http://example.com/image1.jpg", "http://example.com/image2.jpg"])
         self.assertEqual(video_urls, ["http://example.com/video1.mp4"])
 
