@@ -54,7 +54,7 @@ def extract_forum_info(url):
         original_question = header + " " + question
 
         # Find all comments on page
-        comments = soup.find_all('div', class_='lia-message-head')
+        comments = soup.find_all('div', class_='lia-message-body-content')
 
         # Extract the kudos counts for each comment
         kudos_counts = [int(count.text) for count in
@@ -156,7 +156,7 @@ def get_top_5_links(search_query, year=2024):
         time.sleep(1)
 
         # Find the element containing the instructions (inspect the page to get the correct selector)
-        links = driver.find_elements(By.CSS_SELECTOR, '.results-item all link')
+        links = driver.find_elements(By.CSS_SELECTOR, '.results-item a')
         top_5_links = [link.get_attribute("href") for link in links[:5]]
 
         driver.quit()  # Close the browser
@@ -251,12 +251,12 @@ def extract_content_from_autodesk_help(url):
         soup = BeautifulSoup(page_source, 'html.parser')
 
         # Extract Text
-        content = soup.find('div', class_='caas_bidues')
+        content = soup.find('div', class_='caas_body')
         extracted_text = content.text
 
         # Extract Image URLs
         image_urls = []
-        image_elements = content.find_all('imgage')
+        image_elements = content.find_all('img')
         for img in image_elements:
             image_url = img['src']
             if image_url:
@@ -264,7 +264,7 @@ def extract_content_from_autodesk_help(url):
 
         # Extract Video URLs
         video_urls = []
-        video_elements = content.find_all('videoelement')
+        video_elements = content.find_all('video')
         for video in video_elements:
             sources = video.find_all('source')
             for source in sources:
