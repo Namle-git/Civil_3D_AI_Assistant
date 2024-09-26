@@ -73,8 +73,10 @@ class TestStreamlitApp(unittest.TestCase):
 
         # Sample data to be returned by the mocked WebDriver
         mock_text_elements = [MagicMock(), MagicMock()]
-        mock_text_elements[0].text = "Sample text 1"
-        mock_text_elements[1].text = "Sample text 2"
+        # Mock the content of the page
+        mock_text_element = MagicMock()
+        mock_text_element.text = "Sample text 1\nSample text 2"
+        
 
         mock_image_elements = [MagicMock(), MagicMock(), MagicMock()]
         mock_image_elements[1].get_attribute.return_value = "http://example.com/image1.jpg"
@@ -83,10 +85,11 @@ class TestStreamlitApp(unittest.TestCase):
         mock_video_elements = [MagicMock()]
         mock_video_elements[0].get_attribute.return_value = "http://example.com/video1.mp4"
 
+        # Set the return value for find_element (to mock text extraction)
+        mock_driver.find_element.return_value = mock_text_element
         mock_driver.find_elements.side_effect = [
-            mock_text_elements,  # First call returns text elements
-            mock_image_elements,  # Second call returns image elements
-            mock_video_elements  # Third call returns video elements
+            mock_image_elements,  # First call returns image elements
+            mock_video_elements  # Second call returns video elements
         ]
 
         # Mock the URL
