@@ -26,11 +26,8 @@ from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
 from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter
 from ai_agent_functions import *
 
-# Get the absolute path of the current file
-current_dir = os.path.dirname(os.path.abspath(__file__))
-
 # Navigate to the main_project directory
-main_project_dir = os.path.abspath(os.path.join(current_dir, '..', '..', '..', '..'))
+main_project_dir = '/home/site/wwwroot'
 
 # Add the main_project directory to sys.path
 sys.path.insert(0, main_project_dir)
