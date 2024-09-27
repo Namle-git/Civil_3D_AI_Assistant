@@ -28,7 +28,7 @@ from azure.identity import DefaultAzureCredential
 
 
 # Navigate to the main_project directory
-main_project_dir =  os.environ.get('HOME', '/home/site/wwwroot')
+main_project_dir =  '/home/site/wwwroot'
 
 # Add the main_project directory to sys.path
 sys.path.insert(0, main_project_dir)
