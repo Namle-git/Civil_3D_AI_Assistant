@@ -291,9 +291,6 @@ def extract_function_text_from_assistant_output(code_str):
 
 def execute_replacement_function(replacement_function_code, arg):
     try:
-        # Open (or create) the file in write mode
-        with open('webjobs/scheduled_testing_webjob/temp.py', 'w') as file:
-            file.write(replacement_function_code)
         global_namespace = globals()
         local_namespace = {}
         
