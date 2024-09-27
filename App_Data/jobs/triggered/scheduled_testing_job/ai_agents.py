@@ -95,7 +95,7 @@ def test_top_5_links_retrieval():
             3. If there are any mismatches between the function\’s HTML element targeting and the actual structure of the page, suggest specific corrections without generating any code.
             Here is the function:{top_5_links_retrieval_function}
             Make sure to focus on accuracy and recommend any necessary corrections to ensure the function's HTML element matching is aligned with the actual page  
-            structure without calling any functions
+            structure.
             
             Please take one of the following actions:
             1. If no corrections or modifications to the user given function needs to be made, call the `passed_test` function.
@@ -163,7 +163,7 @@ def test_extract_content_from_autodesk_help():
             3. If there are any mismatches between the function\’s HTML element targeting and the actual structure of the page, suggest specific corrections to ensure the function works as intended.
             Here is the function:{extract_content_from_autodesk_help_function}
             Make sure to focus on accuracy and recommend any necessary corrections to ensure the function's HTML element matching is aligned with the actual page  
-            structure without calling any functions or generate any code
+            structure.
             
             Please take one of the following actions:
             1. If no corrections or modifications to the user given function needs to be made, call the `passed_test` function.
@@ -232,7 +232,7 @@ def test_extract_forum_info():
             3. If there are any mismatches between the function’s HTML element targeting and the actual structure of the page, suggest specific corrections to ensure the function works as intended.
             Here is the function:{extract_content_from_autodesk_forum_function}
             Make sure to focus on accuracy and recommend any necessary corrections to ensure the function's HTML element matching is aligned with the actual page  
-            structure without calling any functions
+            structure.
             
             Please take one of the following actions:
             1. If no corrections or modifications to the user given function needs to be made, call the `passed_test` function.
