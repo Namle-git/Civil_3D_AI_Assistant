@@ -88,12 +88,14 @@ def test_top_5_links_retrieval():
             by identifying specific HTML elements. However, I want you to carefully and thoroughly examine the HTML element \
             identification used in the function to ensure that it correctly matches the relevant elements in the page's actual HTML structure.
 
+            Here is the function:{top_5_links_retrieval_function}
+            
             Please pay special attention to every line in the function where soup.find or soup.find_all is used. For each of these lines:
 
             1. Compare the HTML element (tag, class, etc.) specified in the function with the structure of the given html page.
             2. Ensure that the HTML element being targeted by the function is accurate and will successfully retrieve the desired content.
             3. If there are any mismatches between the function\’s HTML element targeting and the actual structure of the page, suggest specific corrections without generating any code.
-            Here is the function:{top_5_links_retrieval_function}
+            
             Make sure to focus on accuracy and recommend any necessary corrections to ensure the function's HTML element matching is aligned with the actual page  
             structure.
             
@@ -156,12 +158,14 @@ def test_extract_content_from_autodesk_help():
             image urls, and video urls by identifying specific HTML elements. However, I want you to carefully and thoroughly examine the HTML element \
             identification used in the function to ensure that it correctly matches the relevant elements in the page's actual HTML structure.
 
+            Here is the function:{extract_content_from_autodesk_help_function}
+            
             Please pay special attention to every line in the function where soup.find or soup.find_all is used. For each of these lines:
 
             1. Compare the HTML element (tag, class, etc.) specified in the function with the structure of a typical Civil 3D documentation page.
             2. Ensure that the HTML element being targeted by the function is accurate and will successfully retrieve the desired content.
             3. If there are any mismatches between the function\’s HTML element targeting and the actual structure of the page, suggest specific corrections to ensure the function works as intended.
-            Here is the function:{extract_content_from_autodesk_help_function}
+            
             Make sure to focus on accuracy and recommend any necessary corrections to ensure the function's HTML element matching is aligned with the actual page  
             structure.
             
@@ -225,12 +229,14 @@ def test_extract_forum_info():
             and accepted solutions by identifying specific HTML elements. However, I want you to carefully and thoroughly examine the HTML element \
             identification used in the function to ensure that it correctly matches the relevant elements in the page's actual HTML structure.
 
+            Here is the function:{extract_content_from_autodesk_forum_function}
+
             Please pay special attention to every line in the function where soup.find or soup.find_all is used. For each of these lines:
 
             1. Compare the HTML element (tag, class, etc.) specified in the function with the structure of a typical Civil 3D forum page.
             2. Ensure that the HTML element being targeted by the function is accurate and will successfully retrieve the desired content.
             3. If there are any mismatches between the function’s HTML element targeting and the actual structure of the page, suggest specific corrections to ensure the function works as intended.
-            Here is the function:{extract_content_from_autodesk_forum_function}
+            
             Make sure to focus on accuracy and recommend any necessary corrections to ensure the function's HTML element matching is aligned with the actual page  
             structure.
             
