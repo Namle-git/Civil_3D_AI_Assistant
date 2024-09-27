@@ -18,7 +18,7 @@ if [ -f "output.tar" ]; then
     echo "Extracting output.tar..."
 
     # Extract the tar file
-    tar -xvf output.tar
+    tar -xvf output.tar --overwrite
 
     # Optional: Remove the tar file after extraction
     rm output.tar
