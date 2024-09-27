@@ -48,12 +48,3 @@ jobs:
           slot-name: 'testing'
           package: './'  # Explicitly specify the directory
           
-      - name: Gunzip, untar the files, and clean up if necessary
-        run: |
-          # Check if the .deb file exists; if it does, remove it to avoid duplicates
-          curl -X POST https://civil3dtestapp-testing.scm.azurewebsites.net/api/command \
-          -u ${{ secrets.AZURE_KUDU_USER }}:${{ secrets.AZURE_KUDU_PASSWORD }} \
-          -d '{
-               "command": "chmod +x /home/site/wwwroot/output.tar.gz /home/site/wwwroot/output.tar && if [ -f /home/site/wwwroot/google-chrome-stable_current_amd64.deb ]; then rm -f /home/site/wwwroot/google-chrome-stable_current_amd64.deb; fi && gunzip /home/site/wwwroot/output.tar.gz && tar -xvf /home/site/wwwroot/output.tar -C /home/site/wwwroot --overwrite && rm /home/site/wwwroot/output.tar.gz /home/site/wwwroot/output.tar",
-              "dir": "/home/site/wwwroot"
-            }'
