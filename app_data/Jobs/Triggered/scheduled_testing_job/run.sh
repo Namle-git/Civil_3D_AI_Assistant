@@ -1,2 +1,2 @@
 #!/bin/bash
-python ai_agent.py
+python ai_agents.py
