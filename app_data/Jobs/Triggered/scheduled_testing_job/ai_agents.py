@@ -50,7 +50,7 @@ def commit_changes_to_git(commit_message):
     subprocess.run(['git', 'commit', '-m', commit_message])
 
     # Push changes
-    subprocess.run(['git', 'push', 'origin', 'main'])
+    subprocess.run(['git', 'push', 'origin', 'Test_webjob'])
 
 def restart_website():
     # Touch the web.config file to trigger a restart
