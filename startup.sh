@@ -8,7 +8,7 @@ if [ -f "output.tar.gz" ]; then
     echo "Extracting output.tar.gz..."
 
     # Decompress the .gz file
-    gunzip output.tar.gz
+    gunzip -f output.tar.gz
 
     echo "Decompression complete."
 fi
