@@ -47,3 +47,14 @@ jobs:
           app-name: 'civil3dtestapp'
           slot-name: 'testing'
           package: './'  # Explicitly specify the directory
+          
+      - name: Gunzip and untar the files
+        run: |
+          # Use Kudu API to run gunzip and tar commands
+          curl -X POST https://civil3dtestapp-testing.scm.azurewebsites.net/api/command \
+          -u ${{ secrets.AZURE_KUDU_USER }}:${{ secrets.AZURE_KUDU_PASSWORD }} \
+          -d '{
+              "command": "gunzip /home/site/wwwroot/output.tar.gz && tar -xvf /home/site/wwwroot/output.tar -C /home/site/wwwroot --overwrite",
+              "dir": "/home/site/wwwroot"
+            }'
+
