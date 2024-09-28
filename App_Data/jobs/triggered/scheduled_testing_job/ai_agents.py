@@ -94,14 +94,16 @@ def test_top_5_links_retrieval():
 
             1. Compare the HTML element (tag, class, etc.) specified in the function with the structure of the given html page.
             2. Ensure that the HTML element being targeted by the function is accurate and will successfully retrieve the desired content.
-            3. If there are any mismatches between the function\’s HTML element targeting and the actual structure of the page, suggest specific corrections without generating any code.
+            3. If there are any mismatches between the function\’s HTML element targeting and the actual structure of the page, suggest specific corrections.
             
             Make sure to focus on accuracy and recommend any necessary corrections to ensure the function's HTML element matching is aligned with the actual page  
             structure.
             
             Please take one of the following actions:
             1. If no corrections or modifications to the user given function needs to be made, call the `passed_test` function.
-            2. If there are any corrections or modifications that should be made to the code, respond with only the modified function without any explanations, comments, or additional text. Do not call the'passed_test' function
+            2. If there are any corrections or modifications that should be made to the code, respond with only the modified function \
+            without any explanations, comments, or additional text. Please preserve the original function output and name. Do not include any \
+            import in the repsonse. Do not call the'passed_test' function.
             """
 
             agent_output = start_ai_agent(os.environ["TOP_5_LINKS_RETRIEVAL_CODE_CORRECTION_ASSISTANT"], message1=message1, message2=message2)
@@ -171,7 +173,9 @@ def test_extract_content_from_autodesk_help():
             
             Please take one of the following actions:
             1. If no corrections or modifications to the user given function needs to be made, call the `passed_test` function.
-            2. If there are  any corrections or modifications that should be made to the code, respond with only the modified function without any explanations, comments, or additional text. Do not call the'passed_test' function"""
+            2. If there are  any corrections or modifications that should be made to the code, respond with only the modified function without any explanations, \
+            comments, or additional text.  Please preserve the original function output and name. Do not include any \
+            import in the repsonse. Do not call the'passed_test' function"""
 
             agent_output = start_ai_agent(os.environ["DOCUMENTATION_CODE_CORRECTION_ASSISTANT"], message1=message1, message2=message2)
             if agent_output == "passed_test":
@@ -242,7 +246,9 @@ def test_extract_forum_info():
             
             Please take one of the following actions:
             1. If no corrections or modifications to the user given function needs to be made, call the `passed_test` function.
-            2. If there are any corrections or modifications that should be made to the code, respond with the modified function without any explanations, comments, or additional text. Do not call the'passed_test' function"""
+            2. If there are any corrections or modifications that should be made to the code, respond with the modified function without any explanations, \
+            comments, or additional text.  Please preserve the original function output and name. Do not include any \
+            import in the repsonse. Do not call the'passed_test' function"""
 
             agent_output = start_ai_agent(os.environ["FORUM_CODE_CORRECTION_ASSISTANT"], message1=message1, message2=message2, message3=message3)
             if agent_output == "passed_test":
