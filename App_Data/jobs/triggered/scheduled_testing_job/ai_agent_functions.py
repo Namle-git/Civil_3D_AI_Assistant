@@ -211,7 +211,7 @@ def start_ai_agent(assistant_id, message1, message2, message3=None, message4=Non
             func_name = action["function"]["name"]
         return func_name
 
-def get_function_text_from_file(func_name, filename=f"{main_project_dir}\Streamlit_app.py"):
+def get_function_text_from_file(func_name, filename=f"{main_project_dir}/Streamlit_app.py"):
     """
     Reads the Python source code from a file and returns the text of the function
     with the specified name.
