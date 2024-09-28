@@ -114,7 +114,7 @@ def test_top_5_links_retrieval():
                 replacement_function_test_status = start_ai_agent(os.environ["TOP_5_LINKS_VERIFICATION_ASSISTANT"], message1=str(page_html_content), message2=str(replacement_function_output))
                 if replacement_function_test_status == "passed_test":
                     try:
-                        replace_function_in_file(f"{main_project_dir}\Streamlit_app.py", "get_top_5_links", agent_output)
+                        replace_function_in_file(f"{main_project_dir}/Streamlit_app.py", "get_top_5_links", agent_output)
                         function_replaced = True
                         alert_developer("Replacement code passed. Implementing", 1)
                     except Exception as e:
@@ -186,7 +186,7 @@ def test_extract_content_from_autodesk_help():
                     replacement_function_test_status = start_ai_agent(os.environ["EXTRACTED_OUTPUT_COMPARISON_ASSISTANT"], message1=str(reference_text), message2=str(replacement_function_text_output))
                     if replacement_function_test_status == "passed_test":
                         try:
-                            replace_function_in_file(f"{main_project_dir}\Streamlit_app.py", "extract_content_from_autodesk_help", agent_output)
+                            replace_function_in_file(f"{main_project_dir}/Streamlit_app.py", "extract_content_from_autodesk_help", agent_output)
                             function_replaced = True
                             alert_developer("Replacement code passed. Implementing", 1)
                         except Exception as e:
@@ -263,7 +263,7 @@ def test_extract_forum_info():
                     replacement_function_test_status = start_ai_agent(os.environ["EXTRACTED_FORUM_COMPARISON_ASSISTANT"], message1=str(message1), message2=str(message2))
                     if replacement_function_test_status == "passed_test":
                         try:
-                            replace_function_in_file(f"{main_project_dir}\Streamlit_app.py", "extract_forum_info", agent_output)
+                            replace_function_in_file(f"{main_project_dir}/Streamlit_app.py", "extract_forum_info", agent_output)
                             function_replaced = True
                             alert_developer("Replacement code passed. Implementing", 1)
                         except Exception as e:
