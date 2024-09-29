@@ -236,19 +236,19 @@ def extract_content_from_autodesk_help(url):
 
         # Extract Text
         content = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "caas_bodytest"))
+            EC.presence_of_element_located((By.CLASS_NAME, "caas_body"))
         )
         extracted_text = content.text
 
         # Extract Image URLs (Adjust selectors as needed)
-        image_elements = driver.find_elements(By.TAG_NAME, "imgage")
+        image_elements = driver.find_elements(By.TAG_NAME, "img")
         for img in image_elements[1:]:
             image_url = img.get_attribute("src")
             if image_url:
                 image_urls.append(image_url)
 
         # Extract Video URLs (Adjust selectors and logic as needed)
-        video_elements = driver.find_elements(By.TAG_NAME, "videoelement")  # Or by other element types
+        video_elements = driver.find_elements(By.TAG_NAME, "video")  # Or by other element types
         for video in video_elements:
             video_url = video.get_attribute("src")  # Or extract from child elements like 'source'
             if video_url:
