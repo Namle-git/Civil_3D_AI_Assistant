@@ -36,24 +36,65 @@ from Streamlit_app import get_top_5_links, extract_content_from_autodesk_help, e
 
 function_replaced = False
 
-def commit_changes_to_git(commit_message):
-    # Navigate to the main project directory
-    os.chdir(main_project_dir)
+def push_changes_to_github():
+    try:
+        # Load the GitHub PAT from environment variable
+        github_pat = os.environ.get('GITHUB_PAT')
+        if not github_pat:
+            raise ValueError("GitHub PAT not found in environment variables.")
 
-    # Add changes
-    subprocess.run(['git', 'add', 'Streamlit_app.py'])
+        # Repository URL with authentication
+        remote_name = 'origin'
+        remote_url = f'https://{github_pat}@github.com/Namle-git/Civil_3D_AI_Assistant.git'
+        
+        # Initialize the repository object
+        repo = Repo(main_project_dir)
+        
+        # Check if remote is set
+        if remote_name not in repo.remotes:
+            repo.create_remote(remote_name, remote_url)
+        else:
+            repo.remotes[remote_name].set_url(remote_url)
 
-    # Commit changes
-    subprocess.run(['git', 'commit', '-m', commit_message])
+        # Fetch the latest branches from remote
+        repo.remotes[remote_name].fetch()
 
-    # Push changes
-    subprocess.run(['git', 'push', 'origin', 'Test_webjob'])
+        # Checkout to "Test_webjob" branch, create it if it doesn't exist
+        if 'Test_webjob' in repo.heads:
+            repo.git.checkout('Test_webjob', force=True)
+        else:
+            # Create branch from remote if it exists
+            if 'origin/Test_webjob' in repo.refs:
+                repo.git.checkout('-b', 'Test_webjob', '--track', 'origin/Test_webjob', '-f')
+            else:
+                # Create new local branch
+                repo.git.checkout('-b', 'Test_webjob')
 
-def restart_website():
-    # Touch the web.config file to trigger a restart
-    web_config_path = os.path.join(main_project_dir, 'web.config')
-    with open(web_config_path, 'a'):
-        os.utime(web_config_path, None)
+        # Pull the latest changes
+        repo.git.pull('origin', 'Test_webjob')
+        # Set user configuration
+        with repo.config_writer() as git_config:
+            git_config.set_value('user', 'name', 'Namle-git')
+            git_config.set_value('user', 'email', 'nemole1407@gmail.com')
+        
+        # Add the file
+        repo.git.add('Streamlit_app.py')
+        
+        # Check for changes
+        if repo.is_dirty(untracked_files=True):
+            # Commit changes
+            repo.index.commit('Automated commit from Azure Web App')
+
+            # Push changes to "Test_webjob" branch
+            repo.remotes[remote_name].push(refspec='Test_webjob:Test_webjob')
+
+            print("Changes pushed to 'Test_webjob' branch on GitHub.")
+        else:
+            print("No changes to commit.")
+    except GitCommandError as e:
+        print(f"An error occurred while executing Git commands: {e}")
+    except Exception as ex:
+        print(f"An error occurred: {ex}")
 
 def test_top_5_links_retrieval():
     global function_replaced
@@ -281,6 +322,5 @@ if __name__=="__main__":
     logging.info("Testing content extraction from Autodesk help \n ------------------------------")
     test_extract_content_from_autodesk_help()
     if function_replaced:
-        commit_changes_to_git("AI Agent: Replaced function")
-        restart_website()
-        logging.info("Application restart triggered.")
+        push_changes_to_github()
+        logging.info("Pushed changes to github")
