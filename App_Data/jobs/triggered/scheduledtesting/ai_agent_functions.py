@@ -311,27 +311,30 @@ def execute_replacement_function(replacement_function_code, arg):
         alert_developer(f"Error in execute_replacement_function: {e}.", 4)
     return None
 
-def replace_function_in_file(file_path, target_function_name, new_function_code, backup_folder=f'{main_project_dir}/backups'):
-    # Step 1: Read the original Python file with UTF-8 encoding and normalize line endings
+def replace_function_in_file(file_path, target_function_name, new_function_code, backup_folder='webjobs/scheduled_testing_webjob/backups'):
+    # Step 1: Read the original Python file
     with open(file_path, 'r') as file:
         original_code = file.read().replace('\r\n', '\n').replace('\r', '\n')
 
-    # Step 2: Parse the code into an AST using asttokens
+    # Step 2: Parse the code into an AST
     try:
-        atok = asttokens.ASTTokens(original_code, parse=True)
-        tree = atok.tree
+        tree = ast.parse(original_code)
     except SyntaxError as e:
         logging.info(f"Syntax error when parsing {file_path}: {e}")
         return
 
-    # Step 3: Define a Node Visitor to locate the target function and get its code range
+    # Step 3: Define a Node Visitor to locate the target function and get its location
     class FunctionLocator(ast.NodeVisitor):
         def __init__(self):
             self.target_function_node = None
+            self.start_lineno = None
+            self.end_lineno = None
 
         def visit_FunctionDef(self, node):
             if node.name == target_function_name:
                 self.target_function_node = node
+                self.start_lineno = node.lineno
+                self.end_lineno = node.end_lineno
             self.generic_visit(node)
 
     # Locate the target function
@@ -341,10 +344,6 @@ def replace_function_in_file(file_path, target_function_name, new_function_code,
     if not locator.target_function_node:
         logging.info(f"Function '{target_function_name}' not found in '{file_path}'.")
         return
-
-    # Get the start and end positions of the function, including comments and decorators
-    start_pos = locator.target_function_node.first_token.startpos
-    end_pos = locator.target_function_node.last_token.endpos
 
     # Step 4: Backup the original file
     backup_dir = os.path.join(os.path.dirname(file_path), backup_folder)
@@ -360,18 +359,19 @@ def replace_function_in_file(file_path, target_function_name, new_function_code,
     shutil.copy2(file_path, backup_file_path)
     logging.info(f"Backup of '{file_path}' created at '{backup_file_path}'.")
 
-    # Step 5: Replace the target function in the original code
-    # Ensure new_function_code ends with a newline
-    if not new_function_code.endswith('\n'):
-        new_function_code += '\n'
+    # Step 5: Split the original code into lines and replace the target function
+    original_lines = original_code.splitlines()
 
-    # Normalize line endings in new_function_code
+    # Preserve everything before and after the target function
+    before_function = original_lines[:locator.start_lineno - 1]
+    after_function = original_lines[locator.end_lineno:]
+    
     new_function_code = new_function_code.replace('\r\n', '\n').replace('\r', '\n')
+    # Insert the new function code, preserving formatting
+    modified_code = '\n'.join(before_function) + '\n' + new_function_code.strip() + '\n' + '\n'.join(after_function)
 
-    modified_code = original_code[:start_pos] + new_function_code + original_code[end_pos:]
-
-    # Step 6: Write the modified code back to the original file with UTF-8 encoding
+    # Step 6: Write the modified code back to the original file
     with open(file_path, 'w') as file:
         file.write(modified_code)
-
+    
     logging.info(f"Function '{target_function_name}' has been replaced in '{file_path}'.")
