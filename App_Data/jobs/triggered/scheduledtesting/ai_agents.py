@@ -39,7 +39,8 @@ from Streamlit_app import get_top_5_links, extract_content_from_autodesk_help, e
 function_replaced = False
 
 def push_changes_to_github():
-    # Load the GitHub PAT from environment variable
+    try:
+        # Load the GitHub PAT from environment variable
         github_pat = os.environ.get('GITHUB_PAT')
         if not github_pat:
             raise ValueError("GitHub PAT not found in environment variables.")
