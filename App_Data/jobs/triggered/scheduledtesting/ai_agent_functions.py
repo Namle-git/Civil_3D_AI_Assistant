@@ -370,8 +370,15 @@ def replace_function_in_file(file_path, target_function_name, new_function_code,
     # Insert the new function code, preserving formatting
     modified_code = '\n'.join(before_function) + '\n' + new_function_code.strip() + '\n' + '\n'.join(after_function)
 
-    # Step 6: Write the modified code back to the original file
-    with open(file_path, 'w') as file:
-        file.write(modified_code)
+    try:
+        if os.path.exists(file_path):
+            os.chmod(file_path, stat.S_IWRITE)
+        with open(file_path, 'w') as file:
+            file.write(modified_code)
+        logging.info(f"Function '{target_function_name}' has been replaced in '{file_path}'.")
+    except PermissionError:
+        logging.info(f"Function '{target_function_name}' has been replaced in '{file_path}'.")(f"Permission denied: Cannot write to {file_path}")
+    except Exception as e:
+        logging.info(f"Function '{target_function_name}' has been replaced in '{file_path}'.")(f"An error occurred: {e}")
     
-    logging.info(f"Function '{target_function_name}' has been replaced in '{file_path}'.")
+    
