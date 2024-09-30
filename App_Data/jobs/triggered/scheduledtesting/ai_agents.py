@@ -89,17 +89,7 @@ def push_changes_to_github():
             repo.index.commit('Automated commit from Azure Web App')
         else:
             print("No changes to commit.")
-        
-        # **Perform a git pull with rebase to integrate remote changes**
-        try:
-            repo.git.pull('--rebase', 'origin', 'Test_webjob')
-        except GitCommandError as e:
-            print(f"Rebase conflict encountered: {e}")
-            # Handle rebase conflicts here if necessary
-            # For now, let's abort the rebase
-            repo.git.rebase('--abort')
-            print("Rebase aborted due to conflicts.")
-            return
+    
         
         # Push changes to "Test_webjob" branch
         repo.git.push('origin', 'Test_webjob')
