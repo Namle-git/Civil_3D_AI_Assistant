@@ -371,8 +371,6 @@ def replace_function_in_file(file_path, target_function_name, new_function_code,
     modified_code = '\n'.join(before_function) + '\n' + new_function_code.strip() + '\n' + '\n'.join(after_function)
 
     try:
-        if os.path.exists(file_path):
-            os.chmod(file_path, stat.S_IWRITE)
         with open(file_path, 'w') as file:
             file.write(modified_code)
         logging.info(f"Function '{target_function_name}' has been replaced in '{file_path}'.")
