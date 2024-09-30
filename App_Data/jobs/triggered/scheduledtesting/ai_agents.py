@@ -17,6 +17,8 @@ import subprocess
 import ast
 import shutil
 import sys
+from git import Repo
+from git.exc import GitCommandError
 from opentelemetry._logs import set_logger_provider
 from opentelemetry.sdk._logs import (
     LoggerProvider,
