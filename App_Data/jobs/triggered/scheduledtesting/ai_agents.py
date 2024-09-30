@@ -39,31 +39,30 @@ from Streamlit_app import get_top_5_links, extract_content_from_autodesk_help, e
 function_replaced = False
 
 def push_changes_to_github():
-    try:
-        # Load the GitHub PAT from environment variable
+    # Load the GitHub PAT from environment variable
         github_pat = os.environ.get('GITHUB_PAT')
         if not github_pat:
             raise ValueError("GitHub PAT not found in environment variables.")
-    
+
         # Repository URL with authentication
         remote_name = 'origin'
         remote_url = f'https://{github_pat}@github.com/Namle-git/Civil_3D_AI_Assistant.git'
-        
+
         # Initialize the repository object
         repo = Repo(main_project_dir)
-    
+
         # Add the repository path to Git's safe directory list
         repo.git.config('--global', '--add', 'safe.directory', main_project_dir)
-        
+
         # Check if remote is set
         if remote_name not in [remote.name for remote in repo.remotes]:
             repo.create_remote(remote_name, remote_url)
         else:
             repo.remotes[remote_name].set_url(remote_url)
-    
+
         # Fetch the latest branches from remote
         repo.remotes[remote_name].fetch()
-    
+
         # Checkout to "Test_webjob" branch, create it if it doesn't exist
         if 'Test_webjob' in [head.name for head in repo.heads]:
             repo.git.checkout('Test_webjob')
@@ -74,27 +73,47 @@ def push_changes_to_github():
             else:
                 # Create new local branch
                 repo.git.checkout('-b', 'Test_webjob')
-        
+
         # Set user configuration
         with repo.config_writer() as git_config:
             git_config.set_value('user', 'name', 'Namle-git')
             git_config.set_value('user', 'email', 'nemole1407@gmail.com')
-        
-        # Add the file
+
+        # **Stash unstaged changes except for Streamlit_app.py**
+        # Save the current index state
+        repo.git.stash('push', '--include-untracked', '--', ':!Streamlit_app.py')
+
+        # Add the Streamlit_app.py file
         repo.git.add('Streamlit_app.py')
-        
-        # Check for changes
-        if repo.is_dirty(untracked_files=True):
+
+        # Check for changes in Streamlit_app.py
+        status = repo.git.status('--short', 'Streamlit_app.py')
+        if status:
             # Commit changes
-            repo.index.commit('Automated commit from Azure Web App')
+            repo.index.commit('Automated commit of Streamlit_app.py from Azure Web App')
         else:
-            print("No changes to commit.")
-    
-        
+            print("No changes to Streamlit_app.py to commit.")
+
+        # Perform a git pull with rebase to integrate remote changes
+        try:
+            repo.git.pull('--rebase', 'origin', 'Test_webjob')
+        except GitCommandError as e:
+            print(f"Rebase conflict encountered: {e}")
+            # Handle rebase conflicts here if necessary
+            # For now, let's abort the rebase
+            repo.git.rebase('--abort')
+            print("Rebase aborted due to conflicts.")
+            # Apply stashed changes back
+            repo.git.stash('pop')
+            return
+
         # Push changes to "Test_webjob" branch
         repo.git.push('origin', 'Test_webjob')
         print("Changes pushed to 'Test_webjob' branch on GitHub.")
-    
+
+        # Apply stashed changes back
+        repo.git.stash('pop')
+
     except GitCommandError as e:
         print(f"An error occurred while executing Git commands: {e}")
         # Optionally, re-raise the exception
