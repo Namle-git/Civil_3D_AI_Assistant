@@ -51,6 +51,9 @@ def push_changes_to_github():
         
         # Initialize the repository object
         repo = Repo(main_project_dir)
+
+        # Add the repository path to Git's safe directory list
+        repo.git.config('--global', '--add', 'safe.directory', main_project_dir)
         
         # Check if remote is set
         if remote_name not in repo.remotes:
