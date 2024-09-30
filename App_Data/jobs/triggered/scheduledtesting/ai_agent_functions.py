@@ -313,7 +313,7 @@ def execute_replacement_function(replacement_function_code, arg):
 
 def replace_function_in_file(file_path, target_function_name, new_function_code, backup_folder=f'{main_project_dir}/backups'):
     # Step 1: Read the original Python file with UTF-8 encoding and normalize line endings
-    with open(file_path, 'r', encoding='utf-8') as file:
+    with open(file_path, 'r') as file:
         original_code = file.read().replace('\r\n', '\n').replace('\r', '\n')
 
     # Step 2: Parse the code into an AST using asttokens
@@ -371,7 +371,7 @@ def replace_function_in_file(file_path, target_function_name, new_function_code,
     modified_code = original_code[:start_pos] + new_function_code + original_code[end_pos:]
 
     # Step 6: Write the modified code back to the original file with UTF-8 encoding
-    with open(file_path, 'w', encoding='utf-8', newline='\n') as file:
+    with open(file_path, 'w') as file:
         file.write(modified_code)
 
     logging.info(f"Function '{target_function_name}' has been replaced in '{file_path}'.")
