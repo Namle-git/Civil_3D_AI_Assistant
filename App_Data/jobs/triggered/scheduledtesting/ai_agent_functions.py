@@ -311,7 +311,7 @@ def execute_replacement_function(replacement_function_code, arg):
         alert_developer(f"Error in execute_replacement_function: {e}.", 4)
     return None
 
-def replace_function_in_file(file_path, target_function_name, new_function_code, backup_folder='{main_project_dir/backups'):
+def replace_function_in_file(file_path, target_function_name, new_function_code, backup_folder=f'{main_project_dir}/backups'):
     # Step 1: Read the original Python file
     with open(file_path, 'r') as file:
         original_code = file.read()
