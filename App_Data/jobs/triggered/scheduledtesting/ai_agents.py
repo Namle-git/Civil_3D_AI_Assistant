@@ -44,39 +44,37 @@ def push_changes_to_github():
         github_pat = os.environ.get('GITHUB_PAT')
         if not github_pat:
             raise ValueError("GitHub PAT not found in environment variables.")
-
+    
         # Repository URL with authentication
         remote_name = 'origin'
         remote_url = f'https://{github_pat}@github.com/Namle-git/Civil_3D_AI_Assistant.git'
         
         # Initialize the repository object
         repo = Repo(main_project_dir)
-
+    
         # Add the repository path to Git's safe directory list
         repo.git.config('--global', '--add', 'safe.directory', main_project_dir)
         
         # Check if remote is set
-        if remote_name not in repo.remotes:
+        if remote_name not in [remote.name for remote in repo.remotes]:
             repo.create_remote(remote_name, remote_url)
         else:
             repo.remotes[remote_name].set_url(remote_url)
-
+    
         # Fetch the latest branches from remote
         repo.remotes[remote_name].fetch()
-
+    
         # Checkout to "Test_webjob" branch, create it if it doesn't exist
-        if 'Test_webjob' in repo.heads:
-            repo.git.checkout('Test_webjob', force=True)
+        if 'Test_webjob' in [head.name for head in repo.heads]:
+            repo.git.checkout('Test_webjob')
         else:
             # Create branch from remote if it exists
-            if 'origin/Test_webjob' in repo.refs:
-                repo.git.checkout('-b', 'Test_webjob', '--track', 'origin/Test_webjob', '-f')
+            if 'origin/Test_webjob' in [ref.name for ref in repo.refs]:
+                repo.git.checkout('-b', 'Test_webjob', '--track', 'origin/Test_webjob')
             else:
                 # Create new local branch
                 repo.git.checkout('-b', 'Test_webjob')
-
-        # Pull the latest changes
-        repo.git.pull('origin', 'Test_webjob')
+        
         # Set user configuration
         with repo.config_writer() as git_config:
             git_config.set_value('user', 'name', 'Namle-git')
@@ -89,17 +87,32 @@ def push_changes_to_github():
         if repo.is_dirty(untracked_files=True):
             # Commit changes
             repo.index.commit('Automated commit from Azure Web App')
-
-            # Push changes to "Test_webjob" branch
-            repo.remotes[remote_name].push(refspec='Test_webjob:Test_webjob')
-
-            print("Changes pushed to 'Test_webjob' branch on GitHub.")
         else:
             print("No changes to commit.")
+        
+        # **Perform a git pull with rebase to integrate remote changes**
+        try:
+            repo.git.pull('--rebase', 'origin', 'Test_webjob')
+        except GitCommandError as e:
+            print(f"Rebase conflict encountered: {e}")
+            # Handle rebase conflicts here if necessary
+            # For now, let's abort the rebase
+            repo.git.rebase('--abort')
+            print("Rebase aborted due to conflicts.")
+            return
+        
+        # Push changes to "Test_webjob" branch
+        repo.git.push('origin', 'Test_webjob')
+        print("Changes pushed to 'Test_webjob' branch on GitHub.")
+    
     except GitCommandError as e:
         print(f"An error occurred while executing Git commands: {e}")
+        # Optionally, re-raise the exception
+        # raise
     except Exception as ex:
         print(f"An error occurred: {ex}")
+        # Optionally, re-raise the exception
+        # raise
 
 def test_top_5_links_retrieval():
     global function_replaced
