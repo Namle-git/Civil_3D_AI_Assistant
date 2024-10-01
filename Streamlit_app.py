@@ -156,7 +156,7 @@ def get_top_5_links(search_query, year=2024):
         time.sleep(1)
 
         # Find the element containing the instructions (inspect the page to get the correct selector)
-        links = driver.find_elements(By.CSS_SELECTOR, '.results-item-title all link')
+        links = driver.find_elements(By.CSS_SELECTOR, '.results-item .results-item-title a')
         top_5_links = [link.get_attribute("href") for link in links[:5]]
 
         driver.quit()  # Close the browser
