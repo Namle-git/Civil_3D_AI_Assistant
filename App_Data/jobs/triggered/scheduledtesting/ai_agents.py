@@ -40,7 +40,7 @@ function_replaced = False
 
 def push_changes_to_github():
     try:
-        # Load the GitHub PAT from environment variable
+       # Load the GitHub PAT from environment variable
         github_pat = os.environ.get('GITHUB_PAT')
         if not github_pat:
             raise ValueError("GitHub PAT not found in environment variables.")
@@ -80,9 +80,17 @@ def push_changes_to_github():
             git_config.set_value('user', 'name', 'Namle-git')
             git_config.set_value('user', 'email', 'nemole1407@gmail.com')
 
-        # **Stash unstaged changes except for Streamlit_app.py**
-        # Save the current index state
-        repo.git.stash('push', '--include-untracked', '--', ':!Streamlit_app.py')
+        # **Identify all changed files except for Streamlit_app.py**
+        changed_files = [item.a_path for item in repo.index.diff(None)]
+        untracked_files = repo.untracked_files
+        files_to_stash = [f for f in changed_files + untracked_files if f != 'Streamlit_app.py']
+
+        # Stash changes in other files
+        if files_to_stash:
+            repo.git.stash('push', '--include-untracked', '--', *files_to_stash)
+            print(f"Stashed changes in files: {files_to_stash}")
+        else:
+            print("No other files to stash.")
 
         # Add the Streamlit_app.py file
         repo.git.add('Streamlit_app.py')
@@ -95,34 +103,27 @@ def push_changes_to_github():
         else:
             print("No changes to Streamlit_app.py to commit.")
 
-        # Perform a git pull with rebase to integrate remote changes
+        # **Attempt to push without pulling**
         try:
-            repo.git.pull('--rebase', 'origin', 'Test_webjob')
+            repo.git.push('origin', 'Test_webjob')
+            print("Changes pushed to 'Test_webjob' branch on GitHub.")
         except GitCommandError as e:
-            print(f"Rebase conflict encountered: {e}")
-            # Handle rebase conflicts here if necessary
-            # For now, let's abort the rebase
-            repo.git.rebase('--abort')
-            print("Rebase aborted due to conflicts.")
-            # Apply stashed changes back
-            repo.git.stash('pop')
-            return
-
-        # Push changes to "Test_webjob" branch
-        repo.git.push('origin', 'Test_webjob')
-        print("Changes pushed to 'Test_webjob' branch on GitHub.")
+            print(f"Push failed: {e}")
+            # If push is rejected, you can decide whether to force push
+            # For now, we'll abort
+            print("Push aborted due to rejection. Please pull and merge remote changes.")
+            # Optionally, you can uncomment the following line to force push
+            # repo.git.push('origin', 'Test_webjob', '--force')
 
         # Apply stashed changes back
-        repo.git.stash('pop')
+        if files_to_stash:
+            repo.git.stash('pop')
+            print("Reapplied stashed changes.")
 
     except GitCommandError as e:
         print(f"An error occurred while executing Git commands: {e}")
-        # Optionally, re-raise the exception
-        # raise
     except Exception as ex:
         print(f"An error occurred: {ex}")
-        # Optionally, re-raise the exception
-        # raise
 
 def test_top_5_links_retrieval():
     global function_replaced
