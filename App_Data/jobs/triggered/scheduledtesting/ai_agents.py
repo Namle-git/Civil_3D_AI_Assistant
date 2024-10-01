@@ -113,7 +113,27 @@ def test_top_5_links_retrieval():
     except Exception as e:
         alert_developer(f"Error in test_top_5_links_retrieval: {e}. Performing secondary testing", 2)
         page_html_content = get_page_html(url="https://help.autodesk.com/view/CIV3D/2024/ENU/?query=how%20to%20rotate%20in%20viewport")
-        secondary_test_status = start_ai_agent(os.environ["TOP_5_LINKS_VERIFICATION_ASSISTANT"], message1=page_html_content, message2=str(top_5_links))
+        message1 = f"""Here is an HTML of a webpage containing several links to helpful forum and documentation pages that might be relevant to a user’s question. \
+        Your task is to review the entire HTML and identify the top 5 URLs that lead to useful forum or documentation pages. You will identify these URLs without \ 
+        calling any functions during this step.
+        
+        Here's the html: {page_html_content}.
+
+        When analyzing the HTML, if a URL contains the substring 'amazonaws', you must treat it as equivalent to its canonical version, which may appear differently \
+        when retrieved but will still function correctly. Therefore, URLs containing 'amazonaws' should not be disregarded or considered different when compared with other URL formats."""
+
+        message2 = f"""Here is a Python list of the 5 URLs identified by a Python function from the HTML provided in the first prompt. Your role is to compare these \
+        Python list entries with the URLs you identified manually. When doing this comparison, treat any URL that includes 'amazonaws' as equivalent to its canonical version, \
+        even if there is a slight difference in the link structure or format.
+
+        Here's the Python list containing the top 5 URLs identified by the function: {top_5_links}
+        
+        If the Python function correctly identifies the top 5 URLs (taking into account the 'amazonaws' link difference), you will confirm that it has worked correctly. \
+        If there are discrepancies, you will explain the difference and suggest corrections by calling the appropriate function."""
+
+
+When analyzing the HTML, if a URL contains the substring 'amazonaws', you must treat it as equivalent to its canonical version, which may appear differently when retrieved but will still function correctly. Therefore, URLs containing 'amazonaws' should not be disregarded or considered different when compared with other URL formats.
+        secondary_test_status = start_ai_agent(os.environ["TOP_5_LINKS_VERIFICATION_ASSISTANT"], message1=message1, message2=message2)
         if secondary_test_status == "passed_test":
             pass
         elif secondary_test_status == "failed_test":
@@ -151,6 +171,23 @@ def test_top_5_links_retrieval():
                 agent_output = extract_function_text_from_assistant_output(agent_output)
                 replacement_function_output = execute_replacement_function(agent_output, "how to rotate in viewport")
                 logging.info(f"Replacement function output: {replacement_function_output}")
+                message1 = f"""Here is an HTML of a webpage containing several links to helpful forum and documentation pages that might be relevant to a user’s question. \
+                Your task is to review the entire HTML and identify the top 5 URLs that lead to useful forum or documentation pages. You will identify these URLs without \ 
+                calling any functions during this step.
+                
+                Here's the html: {page_html_content}.
+        
+                When analyzing the HTML, if a URL contains the substring 'amazonaws', you must treat it as equivalent to its canonical version, which may appear differently \
+                when retrieved but will still function correctly. Therefore, URLs containing 'amazonaws' should not be disregarded or considered different when compared with other URL formats."""
+        
+                message2 = f"""Here is a Python list of the 5 URLs identified by a Python function from the HTML provided in the first prompt. Your role is to compare these \
+                Python list entries with the URLs you identified manually. When doing this comparison, treat any URL that includes 'amazonaws' as equivalent to its canonical version, \
+                even if there is a slight difference in the link structure or format.
+        
+                Here's the Python list containing the top 5 URLs identified by the function: {replacement_function_output}
+                
+                If the Python function correctly identifies the top 5 URLs (taking into account the 'amazonaws' link difference), you will confirm that it has worked correctly. \
+                If there are discrepancies, you will explain the difference and suggest corrections by calling the appropriate function."""
                 replacement_function_test_status = start_ai_agent(os.environ["TOP_5_LINKS_VERIFICATION_ASSISTANT"], message1=str(page_html_content), message2=str(replacement_function_output))
                 if replacement_function_test_status == "passed_test":
                     try:
