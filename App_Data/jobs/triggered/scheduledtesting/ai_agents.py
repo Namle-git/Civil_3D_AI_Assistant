@@ -130,9 +130,7 @@ def test_top_5_links_retrieval():
         
         If the Python function correctly identifies the top 5 URLs (taking into account the 'amazonaws' link difference), you will confirm that it has worked correctly. \
         If there are discrepancies, you will explain the difference and suggest corrections by calling the appropriate function."""
-
-
-When analyzing the HTML, if a URL contains the substring 'amazonaws', you must treat it as equivalent to its canonical version, which may appear differently when retrieved but will still function correctly. Therefore, URLs containing 'amazonaws' should not be disregarded or considered different when compared with other URL formats.
+        
         secondary_test_status = start_ai_agent(os.environ["TOP_5_LINKS_VERIFICATION_ASSISTANT"], message1=message1, message2=message2)
         if secondary_test_status == "passed_test":
             pass
