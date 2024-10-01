@@ -56,7 +56,7 @@ def push_changes_to_github():
         api_url = f'https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}'
     
         # Read the local file content
-        with open(file_path, 'rb') as file:
+        with open(f"{main_project_dir}/Streamlit_app.py", 'rb') as file:
             content = file.read()
         encoded_content = base64.b64encode(content).decode('utf-8')
     
