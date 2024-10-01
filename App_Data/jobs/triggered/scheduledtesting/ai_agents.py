@@ -13,6 +13,7 @@ import requests
 from openai import OpenAI
 import os
 import logging
+import base64
 import subprocess
 import ast
 import shutil
@@ -40,90 +41,59 @@ function_replaced = False
 
 def push_changes_to_github():
     try:
-       # Load the GitHub PAT from environment variable
+        # GitHub credentials and repository details
         github_pat = os.environ.get('GITHUB_PAT')
         if not github_pat:
             raise ValueError("GitHub PAT not found in environment variables.")
-
-        # Repository URL with authentication
-        remote_name = 'origin'
-        remote_url = f'https://{github_pat}@github.com/Namle-git/Civil_3D_AI_Assistant.git'
-
-        # Initialize the repository object
-        repo = Repo(main_project_dir)
-
-        # Add the repository path to Git's safe directory list
-        repo.git.config('--global', '--add', 'safe.directory', main_project_dir)
-
-        # Check if remote is set
-        if remote_name not in [remote.name for remote in repo.remotes]:
-            repo.create_remote(remote_name, remote_url)
+    
+        owner = 'Namle-git'
+        repo_name = 'Civil_3D_AI_Assistant'
+        branch = 'Test_webjob'
+        file_path = 'Streamlit_app.py'
+        commit_message = 'Automated commit of Streamlit_app.py from Azure Web App'
+    
+        # GitHub API URL for the file
+        api_url = f'https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}'
+    
+        # Read the local file content
+        with open(file_path, 'rb') as file:
+            content = file.read()
+        encoded_content = base64.b64encode(content).decode('utf-8')
+    
+        # Get the current file SHA (needed for updates)
+        headers = {
+            'Authorization': f'token {github_pat}',
+            'Accept': 'application/vnd.github.v3+json'
+        }
+    
+        response = requests.get(api_url, headers=headers, params={'ref': branch})
+        if response.status_code == 200:
+            file_info = response.json()
+            sha = file_info.get('sha')
+        elif response.status_code == 404:
+            sha = None
         else:
-            repo.remotes[remote_name].set_url(remote_url)
-
-        # Fetch the latest branches from remote
-        repo.remotes[remote_name].fetch()
-
-        # Checkout to "Test_webjob" branch, create it if it doesn't exist
-        if 'Test_webjob' in [head.name for head in repo.heads]:
-            repo.git.checkout('Test_webjob')
+            raise Exception(f"Failed to get file info: {response.status_code} {response.text}")
+    
+        # Prepare the payload for PUT request
+        payload = {
+            'message': commit_message,
+            'content': encoded_content,
+            'branch': branch
+        }
+        if sha:
+            payload['sha'] = sha
+    
+        # Send the PUT request to create/update the file
+        put_response = requests.put(api_url, headers=headers, json=payload)
+        if put_response.status_code in [200, 201]:
+            action = 'updated' if sha else 'created'
+            logging.info(f"Streamlit_app.py has been {action} successfully.")
         else:
-            # Create branch from remote if it exists
-            if 'origin/Test_webjob' in [ref.name for ref in repo.refs]:
-                repo.git.checkout('-b', 'Test_webjob', '--track', 'origin/Test_webjob')
-            else:
-                # Create new local branch
-                repo.git.checkout('-b', 'Test_webjob')
+            raise Exception(f"Failed to update/create file: {put_response.status_code} {put_response.text}")
 
-        # Set user configuration
-        with repo.config_writer() as git_config:
-            git_config.set_value('user', 'name', 'Namle-git')
-            git_config.set_value('user', 'email', 'nemole1407@gmail.com')
-
-        # **Identify all changed files except for Streamlit_app.py**
-        changed_files = [item.a_path for item in repo.index.diff(None)]
-        untracked_files = repo.untracked_files
-        files_to_stash = [f for f in changed_files + untracked_files if f != 'Streamlit_app.py']
-
-        # Stash changes in other files
-        if files_to_stash:
-            repo.git.stash('push', '--include-untracked', '--', *files_to_stash)
-            print(f"Stashed changes in files: {files_to_stash}")
-        else:
-            print("No other files to stash.")
-
-        # Add the Streamlit_app.py file
-        repo.git.add('Streamlit_app.py')
-
-        # Check for changes in Streamlit_app.py
-        status = repo.git.status('--short', 'Streamlit_app.py')
-        if status:
-            # Commit changes
-            repo.index.commit('Automated commit of Streamlit_app.py from Azure Web App')
-        else:
-            print("No changes to Streamlit_app.py to commit.")
-
-        # **Attempt to push without pulling**
-        try:
-            repo.git.push('origin', 'Test_webjob')
-            print("Changes pushed to 'Test_webjob' branch on GitHub.")
-        except GitCommandError as e:
-            print(f"Push failed: {e}")
-            # If push is rejected, you can decide whether to force push
-            # For now, we'll abort
-            print("Push aborted due to rejection. Please pull and merge remote changes.")
-            # Optionally, you can uncomment the following line to force push
-            # repo.git.push('origin', 'Test_webjob', '--force')
-
-        # Apply stashed changes back
-        if files_to_stash:
-            repo.git.stash('pop')
-            print("Reapplied stashed changes.")
-
-    except GitCommandError as e:
-        print(f"An error occurred while executing Git commands: {e}")
     except Exception as ex:
-        print(f"An error occurred: {ex}")
+        logging.error(f"An error occurred: {ex}")
 
 def test_top_5_links_retrieval():
     global function_replaced
