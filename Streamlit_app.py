@@ -397,7 +397,7 @@ def main():
         )
 
         # Get the question from the user
-        user_input = st.text_input("Enter your text:")
+        user_input = st.text_input("Please don't enter sensitive information:")
         submit_button = st.button("Submit")
 
         # Generate the prompt and inject it into GPT 4o
