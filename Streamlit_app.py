@@ -410,12 +410,12 @@ def analyze_user_input(input_text):
     except HttpResponseError as e:
         logging.info("Analyze text failed.")
         if e.error:
-            st.write(f"Error code: {e.error.code}")
-            st.write(f"Error message: {e.error.message}")
-            st.warning("Analyze text failed. The developer has been notified. Please try again later.")
+            logging.info(f"Error code: {e.error.code}")
+            logging.info(f"Error message: {e.error.message}")
+            st.warning("Error with content filtering. Please try again later.")
         else:
-            st.write(e)
-            st.warning("Analyze text failed. The developer has been notified. Please try again later.")
+            logging.info(e)
+            st.warning("Error with content filtering. Please try again later.")
     
     if response:
         hate_result = next(item for item in response.categories_analysis if item.category == TextCategory.HATE)
