@@ -1,8 +1,4 @@
-# Docs for the Azure Web Apps Deploy action: https://github.com/Azure/webapps-deploy
-# More GitHub Actions for Azure: https://github.com/Azure/actions
-# More info on Python, GitHub Actions, and Azure App Service: https://aka.ms/python-webapps-actions
-
-name: Build and deploy Python app to Azure Web App - civil3daiassitant
+name: Build and deploy Python app to Azure Web App - civil3dtestapp
 
 on:
   push:
@@ -11,8 +7,13 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    environment:
+      name: 'updatetest'
+      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
+    permissions:
+      id-token: write  # This is required for requesting the JWT
 
     steps:
       - uses: actions/checkout@v4
@@ -26,48 +27,18 @@ jobs:
         run: |
           python -m venv venv
           source venv/bin/activate
-      
+
       - name: Install dependencies
         run: pip install -r requirements.txt
-        
+
       # Optional: Add step to run tests here (PyTest, Django test suites, etc.)
 
-      - name: Zip artifact for deployment
-        run: zip release.zip ./* -r
-
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: |
-            release.zip
-            !venv/
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'updatetest'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-    permissions:
-      id-token: write #This is required for requesting the JWT
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-
-      - name: Unzip artifact for deployment
-        run: unzip release.zip
-
-      
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_31BCFC3D852D4710BA33F4E94BED68EB }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_CDBEB4F10412435785B5FE014F580C90 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2087AED0F5E74EC0B26D88A472DABD5A }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_A51DB20314F741F8B331875F789BA060 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_173FCD49A9AB4C5896C1ED106EDB254F }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_DB45244BBF36490CA90288849934DC67 }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
@@ -75,4 +46,4 @@ jobs:
         with:
           app-name: 'civil3daiassitant'
           slot-name: 'updatetest'
-          
+          package: './'  # Explicitly specify the directory
