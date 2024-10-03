@@ -399,7 +399,7 @@ def analyze_user_input(input_text):
     endpoint = os.environ["CONTENT_SAFETY_ENDPOINT"]
     input_safe = True
     # Create an Azure AI Content Safety client
-    client = ContentSafetyClient(endpoint, AzureKeyCredential(str(content_safety_key)))
+    client = ContentSafetyClient(endpoint, AzureKeyCredential(content_safety_key.value))
 
     # Contruct request
     request = AnalyzeTextOptions(text=input_text)
