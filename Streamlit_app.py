@@ -402,7 +402,7 @@ def analyze_user_input(input_text):
     client = ContentSafetyClient(endpoint, AzureKeyCredential(str(content_safety_key)))
 
     # Contruct request
-    request = AnalyzeTextOptions(text=str(input_text))
+    request = AnalyzeTextOptions(text=input_text)
 
     # Analyze text
     try:
