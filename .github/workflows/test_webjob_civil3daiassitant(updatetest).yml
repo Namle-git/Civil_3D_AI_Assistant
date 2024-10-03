@@ -49,3 +49,4 @@ jobs:
         with:
           app-name: 'civil3daiassitant'
           slot-name: 'updatetest'
+          package: './'  # Explicitly specify the directory
