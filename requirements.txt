@@ -10,4 +10,4 @@ azure-monitor-opentelemetry-exporter==1.0.0b29
 azure-keyvault-secrets==4.8.0
 azure-identity==1.17.1
 GitPython==3.1.43
-asttokens==2.4.1
+azure-ai-contentsafety==1.0.0
