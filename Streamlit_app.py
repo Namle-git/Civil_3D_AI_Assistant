@@ -459,7 +459,7 @@ def main():
                 with st.spinner("Processing..."):
                     response = ask_gpt_4o(question=user_input, year=int(year_version))
                 # Display the generated response
-                st.write("This response is AI generated . Please you it at your own risk")
+                st.write("These instructions are AI generated. Please proceed at your own risk")
                 st.write(response.choices[0].message.content)
                 
 if __name__ == "__main__":
