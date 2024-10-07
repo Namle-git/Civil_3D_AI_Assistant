@@ -47,6 +47,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'civil3daiassitant'
+          app-name: 'Civil3DAIAssitant'
           slot-name: 'Production'
           package: './'  # Explicitly specify the directory
