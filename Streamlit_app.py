@@ -353,7 +353,7 @@ def ask_question_on_autodesk_and_generate_prompt(question, year=2024):
     prompt = prompt.replace("Solved!\n\nGo to Solution.", "")
     prompt = prompt.replace("\n\n\n\n", "")
     logging.info(prompt)
-    return prompt
+    return prompt, top_5_links
 
 def ask_gpt_4o(question, year="2024"):
     """
@@ -377,17 +377,18 @@ def ask_gpt_4o(question, year="2024"):
     openai_key = secret.value
     client = OpenAI(api_key=openai_key)
 
+    prompt, top_5_links = ask_question_on_autodesk_and_generate_prompt(question=question, year=year)
     # Generate the prompt using the provided question and send the request to the GPT-4o model
     response = client.chat.completions.create(
         model="gpt-4o",
         messages=[
             {
                 "role": "user",
-                "content": ask_question_on_autodesk_and_generate_prompt(question=question, year=year),
+                "content": prompt,
             }
         ],
     )
-    return response
+    return response, top_5_links
 
 def analyze_user_input(input_text):
     # analyze text
@@ -457,10 +458,14 @@ def main():
         if submit_button or user_input:
             if analyze_user_input(user_input):
                 with st.spinner("Processing..."):
-                    response = ask_gpt_4o(question=user_input, year=int(year_version))
+                    response, top_5_links = ask_gpt_4o(question=user_input, year=int(year_version))
                 # Display the generated response
                 st.write("These instructions are AI generated. Please proceed at your own risk")
+                st.subheader("Summarized troubleshooting steps", divider=True)
                 st.write(response.choices[0].message.content)
+                st.subheader("URLs to reference resources", divider = True)
+                for link in top_5_links:
+                    st.write(link)
                 
 if __name__ == "__main__":
     main()
