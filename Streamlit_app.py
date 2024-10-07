@@ -370,6 +370,7 @@ def main():
     with st.container():
         # Display the asistant's name
         st.title("Civil 3D AI Assistant")
+        st.write("This is an independent application and is not in any way associated with Autodesk")
 
         # Get the question from the user
         user_input = st.text_input("Enter your text:")
@@ -380,8 +381,9 @@ def main():
             with st.spinner("Processing..."):
                 response = ask_gpt_4o(question=user_input)
             # Display the generated response
+            st.write("This response is AI generated . Please you it at your own risk")
             st.write(response.choices[0].message.content)
-
+            
 
 if __name__ == "__main__":
     main()
