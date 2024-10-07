@@ -464,7 +464,7 @@ def main():
                 st.subheader("Summarized troubleshooting steps", divider=True)
                 st.write(response.choices[0].message.content)
                 st.subheader("URLs to reference resources", divider = True)
-                st.write("This application uses OpenAI API to generate responses. OpenAI API do not train models on inputs and outputs"
+                st.write("This application uses OpenAI API to generate responses. OpenAI API do not train models on inputs and outputs")
                 for link in top_5_links:
                     st.write(link)
                 
