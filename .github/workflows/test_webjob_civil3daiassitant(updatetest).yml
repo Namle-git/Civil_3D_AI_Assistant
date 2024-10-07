@@ -14,7 +14,7 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     environment:
-      name: 'Updatetest'
+      name: 'webjobtesting'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
       id-token: write #This is required for requesting the JWT
@@ -48,5 +48,5 @@ jobs:
         id: deploy-to-webapp
         with:
           app-name: 'civil3daiassitant'
-          slot-name: 'updatetest'
+          slot-name: 'webjobtesting'
           package: './'  # Explicitly specify the directory
