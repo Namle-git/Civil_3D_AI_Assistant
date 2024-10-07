@@ -381,7 +381,7 @@ def main():
             with st.spinner("Processing..."):
                 response = ask_gpt_4o(question=user_input)
             # Display the generated response
-            st.write("This response is AI generated . Please you it at your own risk")
+            st.write("This response is AI generated . Please use it at your own risk")
             st.write(response.choices[0].message.content)
             
 
