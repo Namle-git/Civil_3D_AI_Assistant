@@ -255,12 +255,12 @@ def extract_content_from_autodesk_help(url):
         soup = BeautifulSoup(page_source, 'html.parser')
 
         # Extract Text
-        content = soup.find('div', class_='caas_body')
+        content = soup.find('div', class_='caas_bodytest')
         extracted_text = content.get_text()
 
         # Extract Image URLs
         image_urls = []
-        image_elements = content.find_all('img')
+        image_elements = content.find_all('imgage')
         for img in image_elements:
             image_url = img['src']
             if image_url:
@@ -268,7 +268,7 @@ def extract_content_from_autodesk_help(url):
 
         # Extract Video URLs
         video_urls = []
-        video_elements = content.find_all('video')
+        video_elements = content.find_all('videoelements')
         for video in video_elements:
             sources = video.find_all('source')
             for source in sources:
