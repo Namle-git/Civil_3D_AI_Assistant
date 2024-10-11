@@ -447,7 +447,7 @@ def main():
         st.write("This is an independent application and is not in any way associated with Autodesk")
         year_version = st.selectbox(
         "Your Civil 3D version",
-        ("2024", "2023", "2022", "2021", "2020", "2019", "2018"),
+        ("2025", "2024", "2023", "2022", "2021", "2020", "2019", "2018"),
         )
 
         # Get the question from the user
