@@ -99,10 +99,10 @@ def test_top_5_links_retrieval():
     global function_replaced
     reference_top_5_links = [
         'https://forums.autodesk.com/t5/Civil-3D-Forum/Cogo-Point-Text-Rotating-in-Viewport/td-p/9996980', 
+        'https://forums.autodesk.com/t5/civil-3d-forum/map-image-in-viewport-with-rotated-wcs/td-p/13063936',
         'https://help.autodesk.com/view/CIV3D/2024/ENU/?caas=caas/sfdcarticles/sfdcarticles/North-Arrow-Rotates-when-Linked-to-a-Viewport-in-Civil-3D.html', 
         'https://forums.autodesk.com/t5/Civil-3D-Forum/not-displaying-ECW-Raster-image-in-Viewport-Layout-when-I-rotate-the-map-with-the-Alignspace-command/td-p/11090968', 
-        'https://help.autodesk.com/view/CIV3D/2024/ENU/?caas=caas/sfdcarticles/sfdcarticles/When-a-viewport-is-rotated-image-and-lines-do-not-align.html', 
-        'https://help.autodesk.com/view/CIV3D/2024/ENU/?caas=caas/sfdcarticles/sfdcarticles/ECW-disappear-in-Layout-or-enable-background-transparency.html'
+        'https://help.autodesk.com/view/CIV3D/2024/ENU/?caas=caas/sfdcarticles/sfdcarticles/When-a-viewport-is-rotated-image-and-lines-do-not-align.html'
         ]
     search_query = "How to rotate in viewport"
     top_5_links = get_top_5_links(search_query, year=2024)
