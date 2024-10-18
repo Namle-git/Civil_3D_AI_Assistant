@@ -158,7 +158,7 @@ def get_top_5_links(search_query, year=2024):
 
         # Wait for the content to load
         WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, ".results-item .results-item-title a"))
+            EC.presence_of_element_located((By.CSS_SELECTOR, ".results-item .results-item-title a"))
         )
 
         # Find the element containing the instructions (inspect the page to get the correct selector)
