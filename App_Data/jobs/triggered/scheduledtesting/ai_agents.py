@@ -99,7 +99,7 @@ def test_top_5_links_retrieval():
     global function_replaced
     reference_top_5_links = [
         'https://forums.autodesk.com/t5/Civil-3D-Forum/Cogo-Point-Text-Rotating-in-Viewport/td-p/9996980', 
-        'https://forums.autodesk.com/t5/civil-3d-forum/map-image-in-viewport-with-rotated-wcs/td-p/13063936',
+        'https://forums.autodesk.com/t5/Civil-3D-Forum/Map-Image-in-Viewport-with-Rotated-WCS/td-p/13063936',
         'https://help.autodesk.com/view/CIV3D/2024/ENU/?caas=caas/sfdcarticles/sfdcarticles/North-Arrow-Rotates-when-Linked-to-a-Viewport-in-Civil-3D.html', 
         'https://forums.autodesk.com/t5/Civil-3D-Forum/not-displaying-ECW-Raster-image-in-Viewport-Layout-when-I-rotate-the-map-with-the-Alignspace-command/td-p/11090968', 
         'https://help.autodesk.com/view/CIV3D/2024/ENU/?caas=caas/sfdcarticles/sfdcarticles/When-a-viewport-is-rotated-image-and-lines-do-not-align.html'
