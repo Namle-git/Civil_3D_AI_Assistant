@@ -157,14 +157,20 @@ def get_top_5_links(search_query, year=2024):
         driver.get(simulated_search_url)
 
         # Wait for the content to load
-        time.sleep(1)
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_element_located((By.CLASS_NAME, ".results-item .results-item-title a"))
+        )
 
         # Find the element containing the instructions (inspect the page to get the correct selector)
         links = driver.find_elements(By.CSS_SELECTOR, '.results-item .results-item-title a')
         top_5_links = [link.get_attribute("href") for link in links[:5]]
 
         driver.quit()  # Close the browser
-        return top_5_links
+        
+        if top_5_links:
+            return top_5_links
+        else:
+            raise Exception("Top_5_links retrieval error. List is empty")
 
     except Exception as e:
         top_5_links = ["Failed to retrieve the top 5 links."]
