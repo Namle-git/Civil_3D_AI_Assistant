@@ -329,12 +329,9 @@ def ask_question_on_autodesk_and_generate_prompt(question, year=2024):
     for link in top_5_links:
         # Try to extract the page as if it's a forum page
         try:
-            original_question, top_comments, accepted_solutions = extract_forum_info(link)
+            original_question, accepted_solutions = extract_forum_info(link)
             prompt += f"\n"
             prompt += f"**Original question**: {original_question} \n"
-            prompt += f"**Top most liked comments**: \n"
-            for comment in top_comments:
-                prompt += comment.strip()
             prompt += f"\n**Accepted solution(s)** \n"
             for solution in accepted_solutions:
                 prompt += solution.strip()
