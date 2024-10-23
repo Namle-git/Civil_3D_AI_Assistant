@@ -330,6 +330,8 @@ def ask_question_on_autodesk_and_generate_prompt(question, year=2024):
         # Try to extract the page as if it's a forum page
         try:
             original_question, accepted_solutions = extract_forum_info(link)
+            if original_question == "Failed to retrieve the original question.":
+                raise Exception
             prompt += f"\n"
             prompt += f"**Original question**: {original_question} \n"
             prompt += f"\n**Accepted solution(s)** \n"
