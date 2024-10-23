@@ -183,7 +183,7 @@ def test_top_5_links_retrieval():
 
 def test_extract_content_from_autodesk_help():
     global function_replaced
-    reference_text = '\n\nIssue:When a viewport is rotated in\xa0AutoCAD, AutoCAD Map 3D or Civil 3D, the underlying SID or ECW image is no longer aligned to the drafted content.\xa0 Non-rotated viewports appear normal.Note.\xa0 In some cases the content only shifts when zooming in or out.\xa0\n \n\nSolution:To minimize the impact of the issue: \n  \nIn AutoCAD Map 3D or Civil 3D, use MAPCONNECT\xa0command to connect to the SID or ECW as an FDO-connection.\n\n\n\n\n\nTry using a different image format, such as TIF.\nUse non-rotated viewports.\n\n\n\nProducts: AutoCAD Products;\n \n'
+    reference_text = '\n\n\nIssue:When a viewport is rotated in\xa0AutoCAD, AutoCAD Map 3D or Civil 3D, the underlying SID or ECW image is no longer aligned to the drafted content.\xa0 Non-rotated viewports appear normal.Note.\xa0 In some cases the content only shifts when zooming in or out.\xa0\n \n\nSolution:To minimize the impact of the issue: \n  \nIn AutoCAD Map 3D or Civil 3D, use MAPCONNECT\xa0command to connect to the SID or ECW as an FDO-connection.\n\n\n\n\n\nTry using a different image format, such as TIF.\nUse non-rotated viewports.\n\n\n\nProducts: AutoCAD Products;\n \n'
     reference_images = ['https://help.autodesk.com/sfdcarticles/img/0EM3A0000002uCr',
                         'https://help.autodesk.com/sfdcarticles/img/0EM3A0000002uFl']
     reference_videos = []
