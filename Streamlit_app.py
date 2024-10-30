@@ -138,6 +138,7 @@ def get_top_5_links(search_query, year=2024):
        Raises:
            Exception: If there is an issue with the web scraping process.
        """
+
     # Encode the search query to be URL-safe
     encoded_query = quote(search_query, safe='')
 
@@ -147,10 +148,17 @@ def get_top_5_links(search_query, year=2024):
     try:
         # Set up Chrome options for headless mode
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless")  # Run in headless mode
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--remote-debugging-port=9222")
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+        chrome_options.add_argument('--disable-infobars')
+        chrome_options.add_argument('--disable-browser-side-navigation')
+        chrome_options.add_argument('--disable-features=VizDisplayCompositor')
 
         # Set up WebDriver
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
@@ -164,61 +172,16 @@ def get_top_5_links(search_query, year=2024):
         # Find the element containing the instructions (inspect the page to get the correct selector)
         links = driver.find_elements(By.CSS_SELECTOR, '.results-item .results-item-title a')
         top_5_links = [link.get_attribute("href") for link in links[:5]]
-
-        driver.quit()  # Close the browser
         
-        if top_5_links:
-            return top_5_links
-        else:
+        if not top_5_links:
             raise Exception("Top_5_links retrieval error. List is empty")
 
     except Exception as e:
         top_5_links = ["Failed to retrieve the top 5 links."]
         logging.info(f"An error occurred: {e}")
-        return top_5_links
-
-
-def extract_text_from_autodesk_help(url):
-    """
-        Extracts text content from a Civil 3D documentation page.
-
-        Args:
-            url (str): The URL of the Autodesk help page.
-
-        Returns:
-            str: The extracted text content from the page.
-
-        Raises:
-            Exception: If there is an issue with the web scraping process.
-        """
-    try:
-        # Set up Chrome options for headless mode
-        chrome_options = Options()
-        chrome_options.add_argument("--headless")
-        chrome_options.add_argument("--disable-gpu")
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
-
-        # Set up WebDriver
-        driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
-        driver.get(url)
-
-        # Wait for the content to load
-        time.sleep(1)
-
-        # Find the element containing the instructions (inspect the page to get the correct selector)
-        content = WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.CLASS_NAME, "caas_body"))
-        )
-        extracted_text = content.text
-
-        driver.quit()  # Close the browser
-        return extracted_text
-
-    except Exception as e:
-        logging.info(f"An error occurred: {e}")
-        return None
-
+    finally:
+            driver.quit()  # Close the browser
+    return top_5_links
 
 def extract_content_from_autodesk_help(url):
     """
@@ -239,10 +202,17 @@ def extract_content_from_autodesk_help(url):
     try:
         # Set up Chrome options for headless mode
         chrome_options = Options()
-        chrome_options.add_argument("--headless")
+        chrome_options.add_argument("--headless") 
         chrome_options.add_argument("--disable-gpu")
         chrome_options.add_argument("--no-sandbox")
         chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-extensions")
+        chrome_options.add_argument("--remote-debugging-port=9222")
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-blink-features=AutomationControlled')
+        chrome_options.add_argument('--disable-infobars')
+        chrome_options.add_argument('--disable-browser-side-navigation')
+        chrome_options.add_argument('--disable-features=VizDisplayCompositor')
 
         # Set up WebDriver
         driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
@@ -255,14 +225,14 @@ def extract_content_from_autodesk_help(url):
 
         # Extract page source after it is fully loaded
         page_source = driver.page_source
-        driver.quit()  # Close the browser
+
 
         # Parse page source with BeautifulSoup
         soup = BeautifulSoup(page_source, 'html.parser')
 
         # Extract Text
         content = soup.find('div', class_='caas_body')
-        extracted_text = content.get_text()
+        extracted_text = content.get_text(separator=" ", strip=True)
 
         # Extract Image URLs
         image_urls = []
@@ -282,14 +252,14 @@ def extract_content_from_autodesk_help(url):
                 if video_url:
                     video_urls.append(video_url)
 
-        return extracted_text, image_urls, video_urls
-
     except Exception as e:
         extracted_text = "Failed to extract text from the page."
         image_urls = ["Failed to extract image URLs from the page."]
         video_urls = ["Failed to extract video URLs from the page."]
         logging.info(f"An error occurred: {e}")
-        return extracted_text, image_urls, video_urls
+    finally:
+        driver.quit()
+    return extracted_text, image_urls, video_urls
 
 def ask_question_on_autodesk_and_generate_prompt(question, year=2024):
     """
