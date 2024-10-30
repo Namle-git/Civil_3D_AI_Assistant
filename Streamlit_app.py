@@ -180,7 +180,7 @@ def get_top_5_links(search_query, year=2024):
         top_5_links = ["Failed to retrieve the top 5 links."]
         logging.info(f"An error occurred: {e}")
     finally:
-            driver.quit()  # Close the browser
+        driver.quit()  # Close the browser
     return top_5_links
 
 def extract_content_from_autodesk_help(url):
