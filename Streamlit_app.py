@@ -69,7 +69,7 @@ def extract_forum_info(url):
         
         # Extract accepted solutions
         accepted_solutions = []
-        for comment in soup.find_all('div', class_='lia-message-body-content')[2:]:
+        for comment in soup.find_all('div', class_='lia-message-body-content')[1:]:
             checkmark_div = comment.find('div', class_='lia-message-body-accepted-solution-checkmark')
             if checkmark_div:
                 # Get the parent element containing the checkmark and solution text
