@@ -3,6 +3,9 @@
 ## Description
 Civil_3D_AI_Assistant is a Streamlit app designed to assist users with questions related to Civil 3D. The app simulates a search of the Civil 3D help page using user input as the question, iterates through the top 5 links (documentation or forum pages), and executes Python functions to extract information from these links. This information is then used to generate an answer using GPT-4o.
 
+## Demo
+**[Civil 3D AI Assistant](https://civil3daiassitant.azurewebsites.net)**
+
 ## Table of Contents
 - [Installation](#installation)
 - [Usage](#usage)
