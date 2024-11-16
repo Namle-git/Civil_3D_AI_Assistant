@@ -48,7 +48,7 @@ def push_changes_to_github():
     
         owner = 'Namle-git'
         repo_name = 'Civil_3D_AI_Assistant'
-        branch = 'Test_webjob'
+        branch = 'Code-maintenance-agent'
         file_path = 'Streamlit_app.py'
         commit_message = 'Automated commit of Streamlit_app.py from Azure Web App'
     
