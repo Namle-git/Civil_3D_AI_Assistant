@@ -68,8 +68,7 @@ The AI agents are configured using multiple assistants, each with unique system 
 pip install -r requirements.txt
 ```
 
-3. **Set Environment Variables for the Assistants' IDs**:
-* **Create OpenAI Assistants**:
+3. **Set up the OpenAI Assistants**:
   * **TOP_5_LINKS_VERIFICATION_ASSISTANT**:
     - **System prompt**:
         You are a helpful assistant. The user will provide you with two prompts:
@@ -237,6 +236,7 @@ pip install -r requirements.txt
     
     - **Model**:
       gpt-4o
+4. **Set Environment Variables for the Assistants' IDs**:
 * You need to configure the following environment variables with the IDs of the corresponding assistants. You can find these ids under the assistant name in the assistant tab in OpenAI Platform Playground:
 
     * TOP_5_LINKS_VERIFICATION_ASSISTANT: assistant_id
