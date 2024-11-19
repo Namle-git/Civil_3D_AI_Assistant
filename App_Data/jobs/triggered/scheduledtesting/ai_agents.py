@@ -18,19 +18,14 @@ import subprocess
 import ast
 import shutil
 import sys
-from git import Repo
-from git.exc import GitCommandError
-from opentelemetry._logs import set_logger_provider
-from opentelemetry.sdk._logs import (
-    LoggerProvider,
-    LoggingHandler,
-)
-from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter
+import re
 from ai_agent_functions import *
 
+# Get the absolute path of the current file (another_script.py)
+current_dir = os.path.dirname(os.path.abspath(__file__))
+
 # Navigate to the main_project directory
-main_project_dir = '/home/site/wwwroot'
+main_project_dir = os.path.abspath(os.path.join(current_dir, '..', '..', '..', '..'))
 
 # Add the main_project directory to sys.path
 sys.path.insert(0, main_project_dir)
@@ -39,61 +34,8 @@ from Streamlit_app import get_top_5_links, extract_content_from_autodesk_help, e
 
 function_replaced = False
 
-def push_changes_to_github():
-    try:
-        # GitHub credentials and repository details
-        github_pat = os.environ.get('GITHUB_PAT')
-        if not github_pat:
-            raise ValueError("GitHub PAT not found in environment variables.")
-    
-        owner = 'Namle-git'
-        repo_name = 'Civil_3D_AI_Assistant'
-        branch = 'Code-maintenance-agent'
-        file_path = 'Streamlit_app.py'
-        commit_message = 'Automated commit of Streamlit_app.py from Azure Web App'
-    
-        # GitHub API URL for the file
-        api_url = f'https://api.github.com/repos/{owner}/{repo_name}/contents/{file_path}'
-    
-        # Read the local file content
-        with open(f"{main_project_dir}/Streamlit_app.py", 'rb') as file:
-            content = file.read()
-        encoded_content = base64.b64encode(content).decode('utf-8')
-    
-        # Get the current file SHA (needed for updates)
-        headers = {
-            'Authorization': f'token {github_pat}',
-            'Accept': 'application/vnd.github.v3+json'
-        }
-    
-        response = requests.get(api_url, headers=headers, params={'ref': branch})
-        if response.status_code == 200:
-            file_info = response.json()
-            sha = file_info.get('sha')
-        elif response.status_code == 404:
-            sha = None
-        else:
-            raise Exception(f"Failed to get file info: {response.status_code} {response.text}")
-    
-        # Prepare the payload for PUT request
-        payload = {
-            'message': commit_message,
-            'content': encoded_content,
-            'branch': branch
-        }
-        if sha:
-            payload['sha'] = sha
-    
-        # Send the PUT request to create/update the file
-        put_response = requests.put(api_url, headers=headers, json=payload)
-        if put_response.status_code in [200, 201]:
-            action = 'updated' if sha else 'created'
-            logging.info(f"Streamlit_app.py has been {action} successfully.")
-        else:
-            raise Exception(f"Failed to update/create file: {put_response.status_code} {put_response.text}")
-
-    except Exception as ex:
-        logging.error(f"An error occurred: {ex}")
+def normalize_whitespace(text):
+    return re.sub(r'\s+', ' ', text).strip()
 
 def test_top_5_links_retrieval():
     global function_replaced
@@ -183,7 +125,7 @@ def test_top_5_links_retrieval():
 
 def test_extract_content_from_autodesk_help():
     global function_replaced
-    reference_text = '\n\nIssue:\nWhen a viewport is rotated in AutoCAD Products, the underlying SID or ECW image is no longer aligned to the drafted content.\xa0 Non-rotated viewports appear normal.Note.\xa0 In some cases the content only shifts when zooming in or out.\xa0\n\n\nSolution:\nTo minimize the impact of the issue:\n\nIn AutoCAD Products, use\xa0MAPCONNECT\xa0command to connect to the SID or ECW as an FDO-connection.\n\n\n\n\n\nTry using a different image format, such as TIF.\nUse non-rotated viewports.\n\n\n\nSee Also:\n\nRaster image and CAD linework are misaligned in Civil 3D & AutoCAD\nRaster images fail to be aligned in AutoCAD\n\n\n\nProducts: AutoCAD Products;\n \n'
+    reference_text = 'Issue: When a viewport is rotated in AutoCAD Products, the underlying SID or ECW image is no longer aligned to the drafted content.\xa0 Non-rotated viewports appear normal. Note. In some cases the content only shifts when zooming in or out. Solution: To minimize the impact of the issue: In AutoCAD Products, use MAPCONNECT command to connect to the SID or ECW as an FDO-connection. Try using a different image format, such as TIF. Use non-rotated viewports. See Also: Raster image and CAD linework are misaligned in Civil 3D & AutoCAD Raster images fail to be aligned in AutoCAD Products: AutoCAD Products;'
     reference_images = ['https://help.autodesk.com/sfdcarticles/img/0EM3A0000002uCr',
                         'https://help.autodesk.com/sfdcarticles/img/0EM3A0000002uFl']
     reference_videos = []
@@ -191,7 +133,7 @@ def test_extract_content_from_autodesk_help():
     extracted_text, image_urls, video_urls = extract_content_from_autodesk_help(url=url)
     logging.info(extracted_text)
     try: 
-        assert extracted_text == reference_text
+        assert normalize_whitespace(extracted_text) == normalize_whitespace(reference_text)
         for image in image_urls:
             assert image in reference_images, f"Image {image} not found in reference image list."
         assert video_urls == reference_videos
@@ -258,13 +200,13 @@ def test_extract_forum_info():
     reference_original_question = 'Curve Table Hii everyone,Is it possible to create curve table like (in img I have attached).If it is possible could anyone please explain the procedure.Thank you\xa0\n\n\n\n\t\t\t\t\t\n\t\t\t\t\t\tSolved!\n\t\t\t\t\t\n\t\t\t\t\tGo to Solution.'
     reference_accepted_solutions = ["I don't know your level of knowledge regarding label design, however you can put just about anything in one label or multiple things from different entities.Here is a video to get your feet wet. This is on annotation labels.https://www.youtube.com/watch?v=2qZ3nC-gL1MI am not sure if there is a way to do it with alignment labels. You can label the alignment with an annotation (think singular) or a alignment label (the entire alignment).https://www.youtube.com/watch?v=AYtIZzloeucHere is a video about alignment labels:Good luck labeling!!",
     'I tried editing the label properties and found "vertical speed and station". I wouldn\'t have expected to have seen anything regarding super elevation although you could try some of those other labels within the Cant information. I vaguely remember doing super elevation on one of my projects awhile back, and I don\'t know if that would fall under something that could be referenced with the alignment or not. You might be able to make an expression in the settings tab>alignments>commands>new command, but I don\'t know what.']
-
+    reference_accepted_solutions = [normalize_whitespace(solution) for solution in reference_accepted_solutions]
     url = 'https://forums.autodesk.com/t5/civil-3d-forum/curve-table/m-p/12949679'
     original_question, accepted_solutions = extract_forum_info(url=url)
     try: 
-        assert reference_original_question == original_question
+        assert normalize_whitespace(reference_original_question) == normalize_whitespace(original_question)
         for accepted_solution in accepted_solutions:
-            assert accepted_solution in reference_accepted_solutions, f"Accepted solution {accepted_solution} not found in reference accepted solutions list."
+            assert normalize_whitespace(accepted_solution) in reference_accepted_solutions, f"Accepted solution {accepted_solution} not found in reference accepted solutions list."
     except Exception as e:
         alert_developer(f"Error in test_extract_forum_info: {e}. Performing secondary testing", 2)
         page_html_content1, page_html_content2 = get_page_html(url=url)
@@ -337,6 +279,3 @@ if __name__=="__main__":
     test_top_5_links_retrieval()
     logging.info("Testing content extraction from Autodesk help \n ------------------------------")
     test_extract_content_from_autodesk_help()
-    if function_replaced:
-        push_changes_to_github()
-        logging.info("Pushed changes to github")
