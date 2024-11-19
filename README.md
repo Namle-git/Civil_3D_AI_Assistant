@@ -294,7 +294,7 @@ streamlit run Streamlit_app.py
 ```bash
 python ai_agents.py
 ```
-3. The AI agent will execute, iterating through the core extraction functions in Streamlit_app.py. The agent will automatically repair any broken function.
+3. The AI agent will execute, iterating through the core extraction functions in Streamlit_app.py. The agent will automatically repair any broken function. You can try to intentionally break the function by changing the html tag and see how the agnet work.
 
 ### Screenshots
 ![Screenshot](https://github.com/Namle-git/Civil_3D_AI_Assistant/assets/151961878/94705563-a6c8-4773-a3db-89d859e650a9)
