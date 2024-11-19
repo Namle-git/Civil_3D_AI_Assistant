@@ -57,21 +57,18 @@ Civil_3D_AI_Assistant is a Streamlit app designed to assist users with questions
 ### Setting Up AI Assistants API
 The AI agents are configured using multiple assistants, each with unique system prompts and functions. Follow these steps to set up the assistants:
 
-1. **Create a Python Environment for the AI Agent**:
-   - Ensure you create a separate Python environment from the main application to avoid conflicts.
-
-2. **Navigate to the Agent Folder**:
+1. **Navigate to the Agent Folder**:
    ```bash
    cd path/to/Civil_3D_AI_Assistant/App_Data/jobs/triggered/scheduledtesting
    ```
    
-3. **Install Required Packages**:
+2. **Install Required Packages**:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-4. **Set Environment Variables for the Assistants' IDs**:
+3. **Set Environment Variables for the Assistants' IDs**:
 * **Create OpenAI Assistants**:
   * **TOP_5_LINKS_VERIFICATION_ASSISTANT**:
     - **System prompt**:
