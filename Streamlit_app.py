@@ -11,12 +11,6 @@ from urllib.parse import quote
 from bs4 import BeautifulSoup, NavigableString
 import requests
 from openai import OpenAI
-from azure.keyvault.secrets import SecretClient
-from azure.identity import DefaultAzureCredential
-from azure.ai.contentsafety import ContentSafetyClient
-from azure.core.credentials import AzureKeyCredential
-from azure.core.exceptions import HttpResponseError
-from azure.ai.contentsafety.models import AnalyzeTextOptions, TextCategory
 import os
 import logging
 
@@ -343,13 +337,8 @@ def ask_gpt_4o(question, year="2024"):
         Raises:
             Exception: If there is an issue with the API request.
         """
-    # Initiate the OpenAI client
-    key_vault_name = os.environ["KEYVAULT_NAME"]
-    keyVaultRui = f"https://{key_vault_name}.vault.azure.net/"
-    credential = DefaultAzureCredential()
-    client = SecretClient(vault_url=keyVaultRui, credential=credential)
-    secret = client.get_secret("openai-key")
-    openai_key = secret.value
+    # Get the OpenAI API key from the environment variable
+    openai_key = os.getenv("OPENAI_API_KEY")
     client = OpenAI(api_key=openai_key)
 
     prompt, top_5_links = ask_question_on_autodesk_and_generate_prompt(question=question, year=year)
@@ -364,54 +353,6 @@ def ask_gpt_4o(question, year="2024"):
         ],
     )
     return response, top_5_links
-
-def analyze_user_input(input_text):
-    # analyze text
-    key_vault_name = os.environ["KEYVAULT_NAME"]
-    keyVaultRui = f"https://{key_vault_name}.vault.azure.net/"
-    credential = DefaultAzureCredential()
-    client = SecretClient(vault_url=keyVaultRui, credential=credential)
-    content_safety_key = client.get_secret("content-safety-key")
-    endpoint = os.environ["CONTENT_SAFETY_ENDPOINT"]
-    input_safe = True
-    # Create an Azure AI Content Safety client
-    client = ContentSafetyClient(endpoint, AzureKeyCredential(content_safety_key.value))
-
-    # Contruct request
-    request = AnalyzeTextOptions(text=input_text)
-
-    # Analyze text
-    try:
-        response = client.analyze_text(request)
-    except HttpResponseError as e:
-        logging.info("Analyze text failed.")
-        if e.error:
-            logging.info(f"Error code: {e.error.code}")
-            logging.info(f"Error message: {e.error.message}")
-            st.warning("Error with content filtering. Please try again later.")
-        else:
-            logging.info(e)
-            st.warning("Error with content filtering. Please try again later.")
-    
-    if response:
-        hate_result = next(item for item in response.categories_analysis if item.category == TextCategory.HATE)
-        self_harm_result = next(item for item in response.categories_analysis if item.category == TextCategory.SELF_HARM)
-        sexual_result = next(item for item in response.categories_analysis if item.category == TextCategory.SEXUAL)
-        violence_result = next(item for item in response.categories_analysis if item.category == TextCategory.VIOLENCE)
-
-        if hate_result and hate_result.severity > 1:
-            st.warning("This text contains hate speech.")
-            input_safe = False
-        if self_harm_result and self_harm_result.severity > 1:
-            st.warning("This text contains self-harm content.")
-            input_safe = False
-        if sexual_result and sexual_result.severity > 1:
-            st.warning("This text contains sexual content.")
-            input_safe = False
-        if violence_result and violence_result.severity > 1:
-            st.warning("This text contains violent content.")
-            input_safe = False 
-    return input_safe
 
 
 def main():
@@ -431,17 +372,16 @@ def main():
 
         # Generate the prompt and inject it into GPT 4o
         if submit_button or user_input:
-            if analyze_user_input(user_input):
-                with st.spinner("Processing..."):
-                    response, top_5_links = ask_gpt_4o(question=user_input, year=int(year_version))
-                # Display the generated response
-                st.write("These instructions are AI generated. Please proceed at your own risk")
-                st.subheader("Summarized troubleshooting steps", divider=True)
-                st.write(response.choices[0].message.content)
-                st.subheader("URLs to reference resources", divider = True)
-                st.write("This application uses OpenAI API to generate responses. OpenAI API does not train models on inputs and outputs")
-                for link in top_5_links:
-                    st.write(link)
-                
+            with st.spinner("Processing..."):
+                response, top_5_links = ask_gpt_4o(question=user_input, year=int(year_version))
+            # Display the generated response
+            st.write("These instructions are AI generated. Please proceed at your own risk")
+            st.subheader("Summarized troubleshooting steps", divider=True)
+            st.write(response.choices[0].message.content)
+            st.subheader("URLs to reference resources", divider = True)
+            st.write("This application uses OpenAI API to generate responses. OpenAI API does not train models on inputs and outputs")
+            for link in top_5_links:
+                st.write(link)
+
 if __name__ == "__main__":
     main()
