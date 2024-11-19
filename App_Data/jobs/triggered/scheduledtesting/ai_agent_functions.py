@@ -16,36 +16,19 @@ import os
 import logging
 import ast
 import shutil
-from opentelemetry._logs import set_logger_provider
-from opentelemetry.sdk._logs import (
-    LoggerProvider,
-    LoggingHandler,
-)
-from opentelemetry.sdk._logs.export import BatchLogRecordProcessor
-from azure.monitor.opentelemetry.exporter import AzureMonitorLogExporter
-from azure.keyvault.secrets import SecretClient
-from azure.identity import DefaultAzureCredential
 
+# Get the absolute path of the current file (another_script.py)
+current_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Navigate to the main_project directory
-main_project_dir =  '/home/site/wwwroot'
+main_project_dir = os.path.abspath(os.path.join(current_dir, '..', '..', '..', '..'))
 
 # Add the main_project directory to sys.path
 sys.path.insert(0, main_project_dir)
 
 from Streamlit_app import get_top_5_links, extract_content_from_autodesk_help, extract_forum_info
 
-azure_monitor_log_exporter = AzureMonitorLogExporter(
-        connection_string=os.environ["APP_INSIGHTS_CONNECTION_STRING"]
-    )
-# Initiate the OpenAI client
-key_vault_name = os.environ["KEYVAULT_NAME"]
-keyVaultRui = f"https://{key_vault_name}.vault.azure.net/"
-credential = DefaultAzureCredential()
-client = SecretClient(vault_url=keyVaultRui, credential=credential)
-secret = client.get_secret("openai-key")
-openai_key = secret.value
-openai_client = OpenAI(api_key=openai_key)
+openai_client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
 def get_page_html(url):
     """
@@ -89,11 +72,11 @@ def get_page_html(url):
     except Exception as e:
         raise alert_developer(f"Error in get_page_html: {e}.", 4)
     
-# Track whether the processor has already been added
-log_processor_added = False
+# Track whether the handler has already been added
+log_handler_added = False
 
-def alert_developer(message, severity_level, exporter=azure_monitor_log_exporter):
-    global log_processor_added
+def alert_developer(message, severity_level):
+    global log_handler_added
 
     # Map severity levels 1-4 to Python logging levels
     level_mapping = {
@@ -103,28 +86,22 @@ def alert_developer(message, severity_level, exporter=azure_monitor_log_exporter
         4: logging.CRITICAL
     }
     log_level = level_mapping.get(severity_level, logging.WARNING)
-    
-    # Get logger provider and set it (assuming this needs to happen each time)
-    logger_provider = LoggerProvider()
-    set_logger_provider(logger_provider)
 
-    # Add the log record processor only once (using a global flag to track this)
-    if not log_processor_added:
-        logger_provider.add_log_record_processor(BatchLogRecordProcessor(exporter))
-        log_processor_added = True
-
-    # Attach LoggingHandler to namespaced logger if not already attached
+    # Get the logger instance
     logger = logging.getLogger(__name__)
-    
-    if not any(isinstance(h, LoggingHandler) for h in logger.handlers):
-        handler = LoggingHandler()
+
+    # Add a console handler if not already added
+    if not log_handler_added:
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
         logger.addHandler(handler)
-    
+        log_handler_added = True
+
+    # Set the logger level to NOTSET to ensure all messages are processed
     logger.setLevel(logging.NOTSET)
-    
+
     # Log the message at the appropriate level
     logger.log(log_level, message)
-
 
 def add_message_to_thread(assistant_id, thread_id, message_content, max_retries=12, max_timeout=500):
     message = openai_client.beta.threads.messages.create(
@@ -311,7 +288,7 @@ def execute_replacement_function(replacement_function_code, arg):
         alert_developer(f"Error in execute_replacement_function: {e}.", 4)
     return None
 
-def replace_function_in_file(file_path, target_function_name, new_function_code, backup_folder='webjobs/scheduled_testing_webjob/backups'):
+def replace_function_in_file(file_path, target_function_name, new_function_code, backup_folder='backups'):
     # Step 1: Read the original Python file
     with open(file_path, 'r') as file:
         original_code = file.read().replace('\r\n', '\n').replace('\r', '\n')
